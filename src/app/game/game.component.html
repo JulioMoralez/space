@@ -1,0 +1,21 @@
+<div class="ml-5">
+{{globalCount}}
+{{point0.x}}
+{{point0.y}}
+<p>
+<button class="btn btn-outline-info  " type="submit" (click)="start()"></button>
+
+<canvas #canvas123 width={{maxX}} height={{maxY}} style="background-color: black" (mousemove)="mm($event)" (mousedown)="mdown($event)" (mouseup)="mup($event)"></canvas>
+</div>
+
+<p>
+<button class="btn btn-outline-info  " type="submit" (click)="povorot(-10)">L</button>
+<button class="btn btn-outline-info  " type="submit" (click)="povorot(10)">R</button>
+<button class="btn btn-outline-info  " type="submit" (click)="forward(5)">W</button>
+<button class="btn btn-outline-info  " type="submit" (click)="forward(-5)">S</button>
+<p>
+<button class="btn btn-outline-info  " type="submit" (click)="shiftMap2(-10, 0)">Lmap</button>
+<button class="btn btn-outline-info  " type="submit" (click)="shiftMap2(10, 0)">Rmap</button>
+<button class="btn btn-outline-info  " type="submit" (click)="shiftMap2(0, -10)">Wmap</button>
+<button class="btn btn-outline-info  " type="submit" (click)="shiftMap2(0, 10)">Smap</button>
+
