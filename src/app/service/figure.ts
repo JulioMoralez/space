@@ -4,12 +4,19 @@ import {Line} from './line';
 export class Figure {
   private _points: Point[] = [];
   private _lines: Line[] = [];
-  private _x0 = 0;
-  private _y0 = 0;
+  private _point0: Point;
   private _angle = 0;
   private _speed = 0;
-  private _rot = 0;
+  private _rot = 1;
   private PI_180 = Math.PI / 180;
+  private axisF: Point = null; // передняя точка оси
+  private axisR: Point = null; // задняя точка оси
+   target: Point = null;
+
+
+  constructor(point0: Point) {
+    this._point0 = point0;
+  }
 
   get lines(): Line[] {
     return this._lines;
@@ -19,20 +26,12 @@ export class Figure {
     this._lines = value;
   }
 
-  get x0(): number {
-    return this._x0;
+  get point0(): Point {
+    return this._point0;
   }
 
-  set x0(value: number) {
-    this._x0 = value;
-  }
-
-  get y0(): number {
-    return this._y0;
-  }
-
-  set y0(value: number) {
-    this._y0 = value;
+  set point0(value: Point) {
+    this._point0 = value;
   }
 
   get points(): Point[] {
@@ -79,19 +78,59 @@ export class Figure {
   }
 
   forward(df: number) {
-    const a = Math.atan2(this._points[0].y - this._points[2].y, this._points[0].x - this._points[2].x);
-    this._x0 += df * Math.cos(a);
-    this._y0 += df * Math.sin(a);
+    const a = Math.atan2(this.axisF.y - this.axisR.y, this.axisF.x - this.axisR.x);
+    this._point0.x += df * Math.cos(a);
+    this._point0.y += df * Math.sin(a);
     for (let i = 0; i < this._points.length; i++) {
       this._points[i].x += df * Math.cos(a);
       this._points[i].y += df * Math.sin(a);
     }
   }
 
+  setAxis(axisF: Point, axisR: Point) {
+    this.axisF = axisF;
+    this.axisR = axisR;
+  }
+
   povorot(rot: number) {
     rot *= this.PI_180;
     for (let i = 0; i < this._points.length; i++) {
-      this._points[i].povorot(rot, this._x0, this._y0);
+      this._points[i].povorot(rot, this._point0.x, this._point0.y);
     }
+  }
+
+  calcAngle(p1: Point, p2: Point): number {
+    let angle = (p1.x - p2.x) !== 0 ? Math.atan((p1.y - p2.y) / (p1.x - p2.x)) : Math.PI / 2;
+    if ((p1.x - p2.x) > 0) {
+      angle = -angle;
+    } else {
+      if ((p1.y - p2.y) > 0) {
+        angle = - Math.PI - angle;
+      } else {
+        angle = Math.PI - angle;
+      }
+    }
+    return angle * 180 / Math.PI;
+  }
+
+  moveToTarget() {
+    const dt = this.calcAngle(this.target, this._point0);
+    const d = this.calcAngle(this.axisF, this.axisR);
+ //   if (((dt - d) < -0.1) || ((dt - d) > 0.1)) {
+
+ //   }
+    if (((d - dt) > 0) || ((d - dt) < -180)) {
+      this.povorot(1);
+    } else {
+      this.povorot(-1);
+    }
+
+  //  console.log(dt * 180 / Math.PI, d * 180 / Math.PI);
+  }
+
+  moveOnEllipse(){
+  }
+
+  setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number) {
   }
 }

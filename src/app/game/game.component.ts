@@ -1,13 +1,13 @@
 import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
-import {fromEvent, interval, Observable, of, Subscription, timer} from 'rxjs';
-import {filter, map, scan, take} from 'rxjs/operators';
+import {from, interval, of, Subscription} from 'rxjs';
 import {UtilService} from '../service/util.service';
 import {Star} from '../service/star';
 import {Figure} from '../service/figure';
 import {Point} from '../service/point';
 import {Line} from '../service/line';
+import {Joy} from '../service/joy';
 import {Planet} from '../service/planet';
-import {Joy} from '../service/joy.';
+import {Ship} from '../service/ship';
 
 
 
@@ -32,16 +32,21 @@ export class GameComponent implements OnInit {
   globalCount = 0;
   private sub: Subscription = null;
   countStars = 100;
-  maxX = 1000;
-  maxY = 800;
+  maxAreaX = 1000;
+  maxAreaY = 800;
+  maxMapX = this.maxAreaX * 2;
+  maxMapY = this.maxAreaY * 2;
+  borderMap = 50; // толщина границы карты
   figures: Figure[] = [];
-  point0 = new Point(0, 0);
-  joy = new Joy(new Point(this.maxX - 150, this.maxY - 150));
+  point0 = new Point(0, 0); // глобальная точка отсчёта карты
+  joy = new Joy(new Point(this.maxAreaX - 150, this.maxAreaY - 150),
+                new Point(0, 0),
+                new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
+  planetLayers: number[] = [];
 
 
 
   ngOnInit(): void {
-    this.ctx = this.canvas.nativeElement.getContext('2d');
     this.initGameObjects();
   }
 
@@ -51,36 +56,30 @@ export class GameComponent implements OnInit {
   }
 
   start() {
-
-    const stream$ = new Observable(observer => {
-      observer.next(2);
-      // for (let i = 0; i < 5; i++) {
-      //   setTimeout(() => console.log(i), 1000);
-      // }
-      observer.complete();
-      observer.next(3);
-      });
-    stream$.subscribe(value => console.log(value));
     this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
-
-    // console.log('q');
-    // timer(2000).subscribe(value => console.log('e'));
     if (this.sub !== null) {
       this.sub.unsubscribe();
     }
-    this.sub = interval(33).subscribe(value => {
+    this.sub = interval(33).subscribe(() => {
       this.globalCount++;
       for (let i = 0; i < this.countStars; i++) {
         this.stars[i].y += this.stars[i].dy;
-        if (this.stars[i].y > this.maxY) {
-          this.stars[i].x = this.utilService.getRandomInteger(0, this.maxX);
+        if (this.stars[i].y > this.maxAreaY) {
+          this.stars[i].x = this.utilService.getRandomInteger(0, this.maxAreaX);
           this.stars[i].y = 0;
         }
       }
-      if (this.joy.clicked) {
-        this.point0.x -= this.joy.shiftX;
-        this.point0.y -= this.joy.shiftY;
+      this.joy.shiftPoint(this.point0);
+
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < this.figures.length; i++) {
+        // if (this.figures[i] instanceof Planet) {
+        //   (this.figures[i] as Planet).moveOnEllipse();
+        //   continue;
+        // }
+        this.figures[i].moveOnEllipse();
       }
+      this.figures[0].moveToTarget();
       this.refreshCanvas();
     });
 
@@ -88,50 +87,88 @@ export class GameComponent implements OnInit {
 
   private refreshCanvas() {
     this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+    // граница карты
+    this.ctx.beginPath();
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeStyle = 'red';
+    this.ctx.moveTo(this.borderMap + this.point0.x, this.borderMap + this.point0.y);
+    this.ctx.lineTo(this.maxMapX - this.borderMap + this.point0.x, this.borderMap + this.point0.y);
+    this.ctx.lineTo(this.maxMapX - this.borderMap + this.point0.x, this.maxMapY - this.borderMap + this.point0.y);
+    this.ctx.lineTo(this.borderMap + this.point0.x, this.maxMapY - this.borderMap + this.point0.y);
+    this.ctx.lineTo(this.borderMap + this.point0.x, this.borderMap + this.point0.y);
+    this.ctx.stroke();
     // звезды
     this.ctx.fillStyle = 'yellow';
     for (let i = 0; i < this.countStars; i++) {
       this.stars[i].draw(this.ctx);
     }
     // объекты
+    // this.planetLayers.length = 0;
+    // for (let i = 0; i < this.figures.length; i++) {
+    //   if (this.figures[i] instanceof Planet) {
+    //     if (Math.abs((this.figures[i] as Planet).deg) > 180) {
+    //       this.planetLayers.push(i);
+    //     } else {
+    //       this.planetLayers.unshift(i);
+    //     }
+    //     console.log((this.figures[i] as Planet).deg, this.planetLayers);
+    //   }
+    // }
+
+
+
+
+
+    // from(this.planetLayers).subscribe(value => this.figures[value].draw(this.ctx, this.point0));
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < this.figures.length; i++) {
       this.figures[i].draw(this.ctx, this.point0);
     }
     // джойстик
+    this.joy.draw(this.ctx);
+
+    // цель
     this.ctx.beginPath();
     this.ctx.lineWidth = 5;
     this.ctx.strokeStyle = 'red';
-    this.ctx.arc(this.joy.pointJoy0.x, this.joy.pointJoy0.y, this.joy.radiusArea, 0, Math.PI * 2);
+    this.ctx.arc(100, 500, 20,  0, 2 * Math.PI);
     this.ctx.stroke();
-    this.ctx.fillStyle = 'hsl(' + (100 + 2 * this.joy.h) + ',100%,40%)';
-    this.ctx.beginPath();
-    this.ctx.arc(this.joy.pointJoy.x, this.joy.pointJoy.y, this.joy.radiusJoy, 0, Math.PI * 2);
-    this.ctx.fill();
   }
 
+
+
   private initGameObjects() {
+    this.ctx = this.canvas.nativeElement.getContext('2d');
     for (let i = 0; i < this.countStars; i++) {
-      this.stars.push(new Star(this.utilService.getRandomInteger(0, this.maxX), this.utilService.getRandomInteger(0, this.maxY), i));
+      this.stars.push(
+        new Star(this.utilService.getRandomInteger(0, this.maxAreaX), this.utilService.getRandomInteger(0, this.maxAreaY), i));
     }
 
-    this.figures[0] = new Figure();
-    this.figures[0].x0 = 100;
-    this.figures[0].y0 = 100;
-    this.figures[0].points.push(new Point(100, 50));
-    this.figures[0].points.push(new Point(150, 150));
-    this.figures[0].points.push(new Point(100, 150));
-    this.figures[0].points.push(new Point(50, 150));
+    let j = 0;
+    let p = new Point(100, 400);
+    this.figures[j] = new Ship(p);
+    this.figures[j].points.push(new Point(p.x, p.y - 50));
+    this.figures[j].points.push(new Point(p.x + 50, p.y + 50));
+    this.figures[j].points.push(new Point(p.x, p.y + 50));
+    this.figures[j].points.push(new Point(p.x - 50, p.y + 50));
+    this.figures[j].setAxis(this.figures[j].points[0], this.figures[j].points[2]);
+    this.figures[j].target = new Point(100, 500);
     const color = 'red';
     const width = 1;
-    this.figures[0].lines.push(new Line(0, 1, 'blue', width));
-    this.figures[0].lines.push(new Line(1, 3, color, width));
-    this.figures[0].lines.push(new Line(3, 0, 'green', 5));
-    this.figures[0].lines.push(new Line(0, 2, color, width));
+    this.figures[j].lines.push(new Line(0, 1, 'blue', width));
+    this.figures[j].lines.push(new Line(1, 3, color, width));
+    this.figures[j].lines.push(new Line(3, 0, 'green', 5));
+    this.figures[j].lines.push(new Line(0, 2, color, width));
 
-    this.figures[1] = new Planet();
-    this.figures[1].x0 = 100;
-    this.figures[1].y0 = 100;
+    this.figures[1] = new Planet(new Point(this.maxMapX / 2, this.maxMapY / 2), 100, 'yellow', 'red');
+    this.figures[2] = new Planet(new Point(0, 0), 50, 'yellow', 'green');
+    this.figures[2].setParent((this.figures[1] as Planet), 300, 100, -50,   3   );
+    this.figures[3] = new Planet(new Point(0, 0), 20, 'yellow', 'blue');
+    this.figures[3].setParent((this.figures[2] as Planet), 100, 100, 50,   3  );
+    this.figures[4] = new Planet(new Point(0, 0), 10, 'orange', 'yellow');
+    this.figures[4].setParent((this.figures[3] as Planet), 100, 50, -40,   Math.PI / 2  );
+    this.figures[5] = new Planet(new Point(0, 0), 15, 'yellow', 'yellow');
+    this.figures[5].setParent((this.figures[2] as Planet), 50, 50, 100,   1  );
   }
 
   forward(speed: number) {
@@ -143,25 +180,25 @@ export class GameComponent implements OnInit {
   }
 
   mm($event: MouseEvent) {
-    if (this.joy.clicked){
-      this.joy.shiftJoy($event.offsetX, $event.offsetY, this.point0);
-    }
+    this.joy.useJoy($event.offsetX, $event.offsetY, this.point0);
   }
   mdown($event: MouseEvent) {
-
-    this.joy.clicked = true;
-    this.joy.shiftJoy($event.offsetX, $event.offsetY, this.point0);
+    this.joy.startJoy($event.offsetX, $event.offsetY, this.point0);
   }
 
-  mup($event: MouseEvent) {
-    this.joy.clicked = false;
-    this.joy.pointJoy.x = this.joy.pointJoy0.x;
-    this.joy.pointJoy.y = this.joy.pointJoy0.y;
+  mup() {
+    this.joy.resetJoy();
   }
 
-  shiftMap2(dx: number, dy: number) {
-    this.point0.x += dx;
-    this.point0.y += dy;
-    console.log(this.point0);
+  touchInit() {
+    console.log('1');
+    const el = document.getElementById('qwe');
+    el.addEventListener('touchstart', this.handleStart, false);
+  }
+
+  handleStart(evt) {
+    evt.preventDefault();
+    console.log('2');
+    const touches = evt.changedTouches;
   }
 }

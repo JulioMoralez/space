@@ -7,8 +7,8 @@ import { GameComponent } from './game/game.component';
 import {RouterModule, Routes} from '@angular/router';
 
 const appRoutes: Routes = [
-  // { path: '', component: GameComponent},
-  // { path: '**', component: GameComponent },
+  { path: '', component: GameComponent},
+  { path: '**', component: GameComponent },
   { path: 'game', component: GameComponent },
 ];
 
