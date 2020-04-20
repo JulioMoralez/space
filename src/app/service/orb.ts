@@ -1,9 +1,13 @@
 import {Figure} from './figure';
 import {Point} from './point';
 
-export class Planet extends Figure{
+export enum TypeOrb {
+  SUN, PLANET, SATELLITE
+}
 
-  private radius = 75;
+export class Orb extends Figure{
+
+  private typeOrb: TypeOrb;
   private colorFill = 'yellow';
   private colorBorder = 'red';
   private parentFigure: Figure = null;
@@ -16,8 +20,9 @@ export class Planet extends Figure{
   private sinU = 0; //
 
 
-  constructor(point0: Point, radius: number, colorFill: string, colorBorder: string) {
+  constructor(point0: Point, typeOrb: TypeOrb, radius: number, colorFill: string, colorBorder: string) {
     super(point0);
+    this.typeOrb = typeOrb;
     this.radius = radius;
     this.colorFill = colorFill;
     this.colorBorder = colorBorder;

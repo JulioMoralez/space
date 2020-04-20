@@ -5,7 +5,7 @@
 <p>
 <button class="btn btn-outline-info  " type="submit" (click)="start()"></button>
 
-<canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mm($event)" (mousedown)="mdown($event)" (mouseup)="mup()"></canvas>
+<canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
 </div>
 
 <p>
@@ -14,5 +14,6 @@
 <button class="btn btn-outline-info  " type="submit" (click)="forward(5)">W</button>
 <button class="btn btn-outline-info  " type="submit" (click)="forward(-5)">S</button>
 
-  <button class="btn btn-outline-info  " type="submit" (click)="touchInit()">touch</button>
+  <button class="btn btn-outline-info  " type="submit" (click)="moveToTarget()">Движение к цели</button>
+  <button class="btn btn-outline-info  " type="submit" (click)="followToTarget()">Движение за целью</button>
 

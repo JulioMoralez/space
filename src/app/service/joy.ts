@@ -20,7 +20,7 @@ export class Joy {
     this.block2 = block2;
   }
 
-  useJoy(x: number, y: number, point0: Point) {
+  use(x: number, y: number, point0: Point) {
     if (this.clicked) {
       const dx = x - this.pointJoy0.x;
       const dy = y - this.pointJoy0.y;
@@ -55,12 +55,18 @@ export class Joy {
     }
   }
 
-  startJoy(x: number, y: number, point0: Point) {
-    this.clicked = true;
-    this.useJoy(x, y, point0);
+  start(x: number, y: number, point0: Point) {
+      this.clicked = true;
+      this.use(x, y, point0);
   }
 
-  resetJoy() {
+  checkOnArea(x: number, y: number): boolean {
+    const dx = x - this.pointJoy0.x;
+    const dy = y - this.pointJoy0.y;
+    return (Math.sqrt(dx * dx + dy * dy) < this.radiusArea);
+  }
+
+  reset() {
     this.clicked = false;
     this.pointJoy.x = this.pointJoy0.x;
     this.pointJoy.y = this.pointJoy0.y;
