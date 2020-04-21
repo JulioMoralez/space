@@ -31,4 +31,9 @@ export class Point {
     this._x = x;
     this._y = y;
   }
+
+  setValue(point: Point) {
+    this.x = point.x;
+    this.y = point.y;
+  }
 }

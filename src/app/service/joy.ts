@@ -4,10 +4,10 @@ export class Joy {
   private clicked = false; // нажат ли джойстик
   private pointJoy0: Point; // координата центра джойстика
   private pointJoy: Point; // текщая координата джойстика
-  private radiusArea = 100; // радиус активной области
+  private radiusArea = 130; // радиус активной области
   private radiusJoy = 20; // радиус управляющего элемента
   private h = 0; // величина отклонения ждойстика от центра
-  private power = 10; // коэффициент влияния отклонения на велечину сиещения
+  private power = 5; // коэффициент влияния отклонения на велечину сиещения
   private shiftX = 0; // смещение точки на X
   private shiftY = 0; // смещение точки на Y
   private block1: Point; // граничная точка верхняя левая
@@ -75,11 +75,12 @@ export class Joy {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = 'red';
     ctx.arc(this.pointJoy0.x, this.pointJoy0.y, this.radiusArea, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = 'hsl(' + (100 + 2 * this.h) + ',100%,40%)';
+    // ctx.fillStyle = 'hsl(' + (100 + 2 * this.h) + ',100%,40%)'; // меняем цвет от отклонения. Убрал
+    ctx.fillStyle = 'red';
     ctx.beginPath();
     ctx.arc(this.pointJoy.x, this.pointJoy.y, this.radiusJoy, 0, Math.PI * 2);
     ctx.fill();
