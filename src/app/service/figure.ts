@@ -1,5 +1,10 @@
 import {Point} from './point';
 import {Line} from './line';
+import {Shield} from './shield';
+import {Capacitor} from './capacitor';
+import {Equipment} from './equipment';
+import {Lasergun} from './lasergun';
+import {Rocketlauncher} from './rocketlauncher';
 
 export enum State {
   IDLE, FOLLOW, DOCKING, DOCK, DEAD
@@ -16,8 +21,8 @@ export class Figure {
   private acc = 0.2;
   private _rot = 5;
   private PI_180 = Math.PI / 180;
-  private axisF: Point = null; // передняя точка оси
-  private axisR: Point = null; // задняя точка оси
+  private _axisF: Point = null; // передняя точка оси
+  private _axisR: Point = null; // задняя точка оси
   private _chekpoints: Point[] = []; // контрольные точки маршрута
   private _target: Figure = null; // выбранная цель
   private _state: State = State.IDLE;
@@ -26,27 +31,61 @@ export class Figure {
   private onDock: Figure = null;
   private _pointBeforeDock = new Point(0, 0);
   private _scale = 1; // масштаб объекта
-  private _figures: Figure[] = [];
-  private _maxShield = 3;
-  private _shield = this._maxShield;
-  private _maxHp = 3;
+  private _maxHp = 4;
   private _hp = this._maxHp;
+  private minTargetWidth = 5;
+  private maxTargetWidth = 10;
+  private currentTargetWidth = this.minTargetWidth;
+  private deltaTargetWidth = 0.5;
+  private currentTargetRot = 1;
+  private maxTargetRot = 10;
+  private _figures: Figure[] = [];
+  private _equipments: Equipment[] = [];
+  private _shield: Shield = null;
+  private _capacitor: Capacitor = null;
+  private _lasergun: Lasergun = null;
+  private _rocketlauncher: Rocketlauncher = null;
 
 
-  get maxShield(): number {
-    return this._maxShield;
+  get lasergun(): Lasergun {
+    return this._lasergun;
   }
 
-  set maxShield(value: number) {
-    this._maxShield = value;
+  set lasergun(value: Lasergun) {
+    this._lasergun = value;
   }
 
-  get shield(): number {
+  get rocketlauncher(): Rocketlauncher {
+    return this._rocketlauncher;
+  }
+
+  set rocketlauncher(value: Rocketlauncher) {
+    this._rocketlauncher = value;
+  }
+
+  get equipments(): Equipment[] {
+    return this._equipments;
+  }
+
+  set equipments(value: Equipment[]) {
+    this._equipments = value;
+  }
+
+  get shield(): Shield {
     return this._shield;
   }
 
-  set shield(value: number) {
+  set shield(value: Shield) {
     this._shield = value;
+  }
+
+
+  get capacitor(): Capacitor {
+    return this._capacitor;
+  }
+
+  set capacitor(value: Capacitor) {
+    this._capacitor = value;
   }
 
   get maxHp(): number {
@@ -182,6 +221,23 @@ export class Figure {
     this._state = value;
   }
 
+
+  get axisF(): Point {
+    return this._axisF;
+  }
+
+  set axisF(value: Point) {
+    this._axisF = value;
+  }
+
+  get axisR(): Point {
+    return this._axisR;
+  }
+
+  set axisR(value: Point) {
+    this._axisR = value;
+  }
+
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
     if (this.onDock === null) { // если не пpиcтыкoвaны, то рисуем объект
       // рисуем объект из линий
@@ -202,13 +258,44 @@ export class Figure {
         ctx.stroke();
       });
       // отмечаем выбранный объект
-      if (this._target !== null) {
+      if (this._target !== null) { // остваить отображение цели только для игрока playerShip === true
         ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'green';
-        ctx.arc(this._target.point0.x  + point0.x, this._target.point0.y  + point0.y, this._target._radius + 10,  0, 2 * Math.PI);
-        ctx.stroke();
+        ctx.lineWidth = this.currentTargetWidth;
+        ctx.strokeStyle = '#0F0';
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath();
+          ctx.arc(this._target.point0.x  + point0.x, this._target.point0.y  + point0.y, this._target._radius + 10,
+            Math.PI * i / 2 + this.currentTargetRot,   Math.PI * i / 2  + Math.PI / 4  + this.currentTargetRot);
+          ctx.stroke();
+        }
+        if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)){
+          this.deltaTargetWidth = -this.deltaTargetWidth;
+        }
+        this.currentTargetWidth += this.deltaTargetWidth;
+        this.currentTargetRot += 0.1;
+        if (this.currentTargetRot > 2 * Math.PI) {
+          this.currentTargetRot -= 2 * Math.PI;
+        }
       }
+      // щит, хп
+      if (this.shield != null) {
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#00F';
+        ctx.strokeStyle = '#DDD';
+        ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7 - 6   + point0.y,
+                  2 * this.radius * this.shield.currentShield / this.shield.maxShield, 5);
+        ctx.stroke();
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#F00';
+      ctx.strokeStyle = '#DDD';
+      ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7   + point0.y,
+                2 * this.radius * this.hp / this.maxHp, 5);
+      ctx.stroke();
+      ctx.fill();
     }
   }
 
@@ -218,7 +305,7 @@ export class Figure {
     if (df === 0) {
       return;
     }
-    const a = Math.atan2(this.axisF.y - this.axisR.y, this.axisF.x - this.axisR.x);
+    const a = Math.atan2(this._axisF.y - this._axisR.y, this._axisF.x - this._axisR.x);
     this._point0.x += df * Math.cos(a);
     this._point0.y += df * Math.sin(a);
     this._points.forEach(point => {
@@ -228,13 +315,19 @@ export class Figure {
   }
 
   setAxis(axisF: Point, axisR: Point) {
-    this.axisF = axisF;
-    this.axisR = axisR;
+    this._axisF = axisF;
+    this._axisR = axisR;
   }
 
   povorot(rot: number) {
     this._angle += rot;
     rot *= this.PI_180;
+    if (this._angle >= 360) {
+      this._angle -= 360;
+    }
+    if (this._angle <= -360) {
+      this._angle += 360;
+    }
     this._points.forEach(point => {
       point.povorot(rot, this._point0.x, this._point0.y);
     });
@@ -267,7 +360,7 @@ export class Figure {
         const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
         if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
           this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
-          this.targetReach();
+          this.targetReach(0); //////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           if (this._state === State.DOCKING) { // стыкуемся
             this.onDock = this._target;
             this._pointBeforeDock.setValue(this._point0);
@@ -275,7 +368,7 @@ export class Figure {
           }
         } else {
           const dt = this.calcAngle(this._chekpoints[0], this._point0);
-          const d = this.calcAngle(this.axisF, this.axisR);
+          const d = this.calcAngle(this._axisF, this._axisR);
           let rot = 0 ;
           // зная два вектора (ось объекта и вектор к цели) поворачиваем в ближайшую сторону
           const diffAngle = Math.abs(d - dt);
@@ -314,9 +407,9 @@ export class Figure {
     }
   }
 
-  checkOnArea(point: Point): boolean {
-    const dx = point.x - this._point0.x;
-    const dy = point.y - this._point0.y;
+  checkOnArea(x: number, y: number): boolean {
+    const dx = x - this._point0.x;
+    const dy = y - this._point0.y;
     return (Math.sqrt(dx * dx + dy * dy) < this._radius);
   }
 
@@ -354,18 +447,18 @@ export class Figure {
   }
 
   logic() {
+    this.equipments.forEach(equipment => equipment.logic());
     if (this.hp <= 0) {
       this._state = State.DEAD;
       this.figures.splice(this.figures.indexOf(this), 1);
     }
     if (this.target !== null)  {
       if (this.target._state === State.DEAD) {
-        console.log('1232341234');
         this.target = null;
       }
     }
   }
 
-  targetReach() {
+  targetReach(damage: number) {
   }
 }

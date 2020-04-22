@@ -4,7 +4,6 @@ import {UtilService} from '../service/util.service';
 import {Star} from '../service/star';
 import {Figure, State} from '../service/figure';
 import {Point} from '../service/point';
-import {Line} from '../service/line';
 import {Joy} from '../service/joy';
 import {Orb, TypeOrb} from '../service/orb';
 import {Ship} from '../service/ship';
@@ -32,22 +31,20 @@ export class GameComponent implements OnInit {
   globalCount = 0;
   private sub: Subscription = null;
   countStars = 100;
-  maxAreaX = 1000;
+  maxAreaX = 1300;
   maxAreaY = 800;
   maxMapX = this.maxAreaX * 2;
   maxMapY = this.maxAreaY * 2;
   borderMap = 50; // толщина границы карты
   menuX = 300;
-  menuY = 0;
+  menuY = 600;
   borderMinimap = 10;
   minimapXY = this.menuX - 2 * this.borderMinimap;
   visibleAreaOnMinimapX = this.maxAreaX * this.minimapXY / this.maxMapX;
   visibleAreaOnMinimapY = this.maxAreaY * this.minimapXY / this.maxMapY;
-  maxCanvasX = this.maxAreaX + this.menuX;
-  maxCanvasY = this.maxAreaY + this.menuY;
   point0 = new Point(0, 0); // глобальная точка отсчёта карты
   figures: Figure[] = [];
-  joy = new Joy(new Point(this.maxCanvasX - 150, this.maxCanvasY - 150),
+  joy = new Joy(new Point(this.maxAreaX - 150, this.maxAreaY - 150),
                 new Point(0, 0),
                 new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
   menu = new Menu();
@@ -132,14 +129,57 @@ export class GameComponent implements OnInit {
     this.ctx.lineWidth = 3;
     this.ctx.strokeStyle = 'orange';
     this.ctx.fillStyle = 'black';
-    this.ctx.rect(this.maxAreaX, 0, this.maxCanvasX - this.maxAreaX, this.maxCanvasY);
+    this.ctx.rect(this.maxAreaX - this.menuX, this.maxAreaY - this.menuY, this.maxAreaX, this.maxAreaY);
     this.ctx.fill();
     this.ctx.stroke();
+
+    // корабль игрока
+    // щит, броня, энергия
+    const scaleX = this.maxAreaX - this.menuX + 30;
+    const scaleY = this.maxAreaY - this.minimapXY + -100;
+    const maxScale = this.menuX - 60;
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = 'orange';
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY, maxScale, 12);
+    this.ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY + 20, maxScale, 12);
+    this.ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY + 40, maxScale, 12);
+    this.ctx.stroke();
+    if (this.playerShip.capacitor !== null) {
+      this.ctx.beginPath();
+      this.ctx.fillStyle = 'yellow';
+      this.ctx.rect(scaleX, scaleY, maxScale * this.playerShip.capacitor.currentEnergy / this.playerShip.capacitor.maxEnergy, 12);
+      this.ctx.fill();
+    }
+    if (this.playerShip.shield !== null) {
+      this.ctx.beginPath();
+      this.ctx.rect(scaleX, scaleY + 20, maxScale * this.playerShip.shield.currentShield / this.playerShip.shield.maxShield, 12);
+      this.ctx.fillStyle = '#00F';
+      this.ctx.fill();
+    }
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY + 40, maxScale * this.playerShip.hp / this.playerShip.maxHp, 12);
+    this.ctx.fillStyle = '#F00';
+    this.ctx.fill();
+    // ракеты в запасе
+    if (this.playerShip.rocketlauncher !== null) {
+      for (let i = 0; i < this.playerShip.rocketlauncher.currentRocket; i++) {
+        this.ctx.beginPath();
+        this.ctx.rect(scaleX + i * 20, scaleY + 60, 12, 12);
+        this.ctx.fillStyle = '#00F';
+        this.ctx.fill();
+      }
+    }
+
 
     // видимая область на миникарте
     this.ctx.beginPath();
     this.ctx.fillStyle = '#222';
-    this.ctx.rect(-this.point0.x * this.minimapXY / this.maxMapX + this.maxAreaX + this.borderMinimap,
+    this.ctx.rect(-this.point0.x * this.minimapXY / this.maxMapX + this.maxAreaX - this.menuX + this.borderMinimap,
                   -this.point0.y * this.minimapXY / this.maxMapY + this.maxAreaY - this.minimapXY - this.borderMinimap,
                   this.visibleAreaOnMinimapX, this.visibleAreaOnMinimapY);
     this.ctx.fill();
@@ -150,7 +190,8 @@ export class GameComponent implements OnInit {
     // объекты на миникарте
     this.ctx.beginPath();
     this.ctx.strokeStyle = 'orange';
-    this.ctx.rect(this.maxAreaX + this.borderMinimap, this.maxAreaY - this.minimapXY - this.borderMinimap, this.minimapXY , this.minimapXY);
+    this.ctx.rect(this.maxAreaX  - this.menuX + this.borderMinimap,
+                  this.maxAreaY  - this.minimapXY - this.borderMinimap, this.minimapXY , this.minimapXY);
     this.ctx.stroke();
     for (const figure of this.figures) {
       this.drawOnMiniMap(figure);
@@ -158,11 +199,17 @@ export class GameComponent implements OnInit {
   }
 
   drawOnMiniMap(figure: Figure) {
-    this.ctx.beginPath();
-    this.ctx.fillStyle = 'yellow';
-    this.ctx.fillRect(figure.point0.x * this.minimapXY / this.maxMapX + this.maxAreaX + this.borderMinimap - 2,
-                      figure.point0.y * this.minimapXY / this.maxMapY + this.maxAreaY - this.minimapXY - this.borderMinimap - 2, 4 , 4);
-    this.ctx.fill();
+    const x = figure.point0.x * this.minimapXY / this.maxMapX + this.maxAreaX  - this.menuX + this.borderMinimap - 2;
+    const y = figure.point0.y * this.minimapXY / this.maxMapY + this.maxAreaY - this.minimapXY - this.borderMinimap - 2;
+    if ((x > (this.maxAreaX - this.menuX + this.borderMinimap - 2)) &&
+        (x < (this.maxAreaX - this.borderMinimap - 2)) &&
+        (y > (this.maxAreaY - this.minimapXY - this.borderMinimap)) &&
+        (y < (this.maxAreaY - this.borderMinimap))) {
+      this.ctx.beginPath();
+      this.ctx.fillStyle = 'yellow';
+      this.ctx.fillRect(x, y, 4 , 4);
+      this.ctx.fill();
+    }
   }
 
 
@@ -209,7 +256,8 @@ export class GameComponent implements OnInit {
     if (this.joy.checkOnArea(x, y)) {
       this.joy.start(x, y, this.point0);
     } else {
-      if (x < this.maxAreaX) {
+      if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
+          ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
         this.menu.start(x, y, this.point0);
       }
     }
@@ -220,7 +268,7 @@ export class GameComponent implements OnInit {
     switch (this.menu.reset()) {
       case 1: { // выбор
         for (const figure of this.figures) {
-          if (figure.checkOnArea(this.menu.point0)) {
+          if (figure.checkOnArea(this.menu.point0.x, this.menu.point0.y)) {
             this.playerShip.target = figure;
             break;
           }
@@ -258,7 +306,11 @@ export class GameComponent implements OnInit {
     this.playerShip.undock();
   }
 
-  fire() {
-    this.playerShip.fire();
+  fireRocket() {
+    this.playerShip.fireRocket();
+  }
+
+  fireLaser() {
+    this.playerShip.fireLaser();
   }
 }

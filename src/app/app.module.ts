@@ -16,7 +16,7 @@ const appRoutes: Routes = [
   declarations: [
     AppComponent,
     HeaderComponent,
-    GameComponent
+    GameComponent,
   ],
   imports: [
     BrowserModule,

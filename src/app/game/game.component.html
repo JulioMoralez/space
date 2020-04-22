@@ -3,7 +3,7 @@
 {{figures.length}}
 
 <div class="ml-5">
-<canvas #canvas123 id='qwe' width={{maxCanvasX}} height={{maxCanvasY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+<canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
 </div>
 <button class="btn btn-outline-info  " type="submit" (click)="start()">Запустить</button>
 <p>
@@ -16,5 +16,6 @@
   <button class="btn btn-outline-info  " type="submit" (click)="followToTarget()">Движение за целью</button>
   <button class="btn btn-outline-info  " type="submit" (click)="dock()">Стыковка</button>
   <button class="btn btn-outline-info  " type="submit" (click)="undock()">Вылет</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="fire()">Выстрел</button>
+  <button class="btn btn-outline-info  " type="submit" (click)="fireRocket()">Выстрел 1</button>
+  <button class="btn btn-outline-info  " type="submit" (click)="fireLaser()">Выстрел 2</button>
 

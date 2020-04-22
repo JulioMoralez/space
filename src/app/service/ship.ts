@@ -1,9 +1,11 @@
 import {Figure, State} from './figure';
 import {UtilService} from './util.service';
 import {Point} from './point';
-import {Rocket} from './rocket';
-import {GameComponent} from '../game/game.component';
 import {Line} from './line';
+import {Shield} from './shield';
+import {Capacitor} from './capacitor';
+import {Lasergun} from './lasergun';
+import {Rocketlauncher} from './rocketlauncher';
 
 export class Ship extends Figure {
 
@@ -28,6 +30,14 @@ export class Ship extends Figure {
     this.lines.push(new Line(1, 3, color, width));
     this.lines.push(new Line(3, 0, 'green', 5));
     this.lines.push(new Line(0, 2, color, width));
+    this.shield = new Shield();
+    this.equipments.push(this.shield);
+    this.capacitor = new Capacitor();
+    this.equipments.push(this.capacitor);
+    this.lasergun = new Lasergun();
+    this.equipments.push(this.lasergun);
+    this.rocketlauncher = new Rocketlauncher();
+    this.equipments.push(this.rocketlauncher);
   }
 
   logic() {
@@ -39,9 +49,15 @@ export class Ship extends Figure {
     }
   }
 
-  fire() {
-    if ((this.target !== null) && (this.target !== this)) {
-      this.figures.push(new Rocket(this));
+  fireRocket() {
+    if (this.rocketlauncher !== null) {
+      this.rocketlauncher.fireRocket(this);
+    }
+  }
+
+  fireLaser() {
+    if (this.lasergun !== null) {
+      this.lasergun.fireLaser(this);
     }
   }
 }

@@ -1,23 +1,19 @@
 import {Figure, State} from './figure';
 import {Point} from './point';
 import {Line} from './line';
+import {Weapon} from './weapon';
 
-export class Rocket extends Figure{
-
-  private launcher: Figure = null;
-  private damage = 1;
+export class Rocket extends Weapon{
 
   constructor(launcher: Figure) {
-    super(new Point(launcher.point0.x, launcher.point0.y));
-    this.launcher = launcher;
-    this.figures = launcher.figures;
-    this.target = launcher.target;
-    this.angle = launcher.angle;
+    super(launcher);
+    this.damage = 1;
     this.maxHp = 1;
     this.hp = this.maxHp;
     this.maxSpeed = 10;
     this.scale = 0.3;
     this.radius = 100 * this.scale;
+    this.maxRange = 200;
     this.points.push(new Point(this.point0.x, this.point0.y - 150 * this.scale));
     this.points.push(new Point(this.point0.x + 20 * this.scale, this.point0.y - 40 * this.scale));
     this.points.push(new Point(this.point0.x + 20 * this.scale, this.point0.y));
@@ -53,9 +49,11 @@ export class Rocket extends Figure{
     }
   }
 
-  targetReach() { // цель достигнута
-    this.target.hp -= this.damage;
-    this.state = State.DEAD;
-    this.figures.splice(this.figures.indexOf(this), 1); // удаляем ракету
+  moveWeapon() {
+    super.moveWeapon();
+    if (this.currentRange > this.maxRange) { // закончилось топливо у ракеты
+      this.chekpoints.length = 0;
+      this.target = null;   // останавливаем ракету
+    }
   }
 }
