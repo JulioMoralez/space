@@ -22,7 +22,7 @@ export class Ship extends Figure {
   private _currentEnergy = this._maxEnergy;
   private _maxAccEnergy = 0;
   private _currentAccEnergy = this.maxAccEnergy;
-  private _cargo = 4;
+  private _maxCargo = 4;
   private _maxFuel = 7;
   private _currentFuel = this._maxFuel;
   private _maxAccShield = 0;
@@ -94,12 +94,12 @@ export class Ship extends Figure {
     this._maxAccEnergy = value;
   }
 
-  get cargo(): number {
-    return this._cargo;
+  get maxCargo(): number {
+    return this._maxCargo;
   }
 
-  set cargo(value: number) {
-    this._cargo = value;
+  set maxCargo(value: number) {
+    this._maxCargo = value;
   }
 
   get maxFuel(): number {
@@ -140,13 +140,13 @@ export class Ship extends Figure {
     this.lines.push(new Line(1, 3, color, width));
     this.lines.push(new Line(3, 0, 'green', 5));
     this.lines.push(new Line(0, 2, color, width));
-    this.installEquip(new Armor());
-    this.installEquip(new Capacitor());
-    this.installEquip(new Cargobay());
-    this.installEquip(new Fueltank());
-    this.installEquip(new Shield());
-    this.installEquip(new Lasergun());
-    this.installEquip(new Rocketlauncher());
+    this.installEquip(new Armor(1));
+    this.installEquip(new Capacitor(1));
+    // this.installEquip(new Cargobay(1));
+    this.installEquip(new Fueltank(1));
+    this.installEquip(new Shield(1));
+    this.installEquip(new Lasergun(1));
+    this.installEquip(new Rocketlauncher(1));
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {

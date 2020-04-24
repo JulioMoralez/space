@@ -9,23 +9,23 @@
   {{this.id}}
 </div>
 <div>
-  {{this.name}}
+  {{this.name}} Стоимость продажи: {{this.price}}
 </div>
 <div>
   {{this.info}}
 </div>
-<button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="deleteE()">Снять</button>
-
-<table border="0" align="center" cellpadding="4" table-layout="fixed">
-  <tr>
-    <td *ngFor="let thing of inventory; let i=index">
-      <div>
-        <button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="getInfoFromInv(i)">{{thing.id}}</button>
-      </div>
-    </td>
+<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.SHIP" type="submit" (click)="deleteE()">Снять</button>
+<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.INVENTORY || equipment.type === Equip.GOODS" type="submit" (click)="setE()">Установить</button>
+<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.INVENTORY" type="submit" (click)="sell()">Продать</button>
+<table border="0" align="center" cellpadding="4"  table-layout="fixed">
+  <tr *ngFor="let jj of [].constructor(this.game.playerShip.maxCargo / 4); let j=index">
     <td>
-      <button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="setE()">Установить</button>
+    <span *ngFor="let thing of game.inventory; let i=index">
+        <button *ngIf="i % (this.game.playerShip.maxCargo / 4) === j" [ngClass]="this.myStyle" [disabled]="game.inventory[i] === game.emptyEquipment" type="submit" (click)="getInfoFromInv(i)">{{thing.label}}</button>
+    </span>
+
     </td>
   </tr>
 </table>
+
 

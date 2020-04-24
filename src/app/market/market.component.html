@@ -1,0 +1,12 @@
+<br>
+<table border="0" align="center" cellpadding="4"  table-layout="fixed">
+  <tr *ngFor="let jj of [].constructor(8); let j=index">
+    <td>
+    <span *ngFor="let thing of game.market; let i=index">
+        <button *ngIf="i % 8 === j" [ngClass]="this.myStyle" [disabled]="game.market[i] === game.emptyEquipment" type="submit" (click)="getInfoFromMarket(i)">{{thing.label}}</button>
+    </span>
+
+    </td>
+  </tr>
+</table>
+<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.MARKET" type="submit" (click)="buy()">Купить</button>

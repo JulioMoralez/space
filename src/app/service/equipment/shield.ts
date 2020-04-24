@@ -7,11 +7,32 @@ export class Shield extends Equipment{
   private accShield = 0.1;
 
 
-  constructor() {
+  constructor(i: number) {
     super();
+    switch (i) {
+      case 1: {
+        this.maxShield = 1;
+        this.accShield = 0.1;
+        this.price = 10;
+        break;
+      }
+      case 2: {
+        this.maxShield = 2;
+        this.accShield = 0.1;
+        this.price = 20;
+        break;
+      }
+      case 3: {
+        this.maxShield = 10;
+        this.accShield = 0.2;
+        this.price = 30;
+        break;
+      }
+    }
     this.type = Equip.SHIELD;
-    this.id = 1;
-    this.name = 'Щит 1';
+    this.id = i;
+    this.label = 'S' + i;
+    this.name = 'Щит ' + i;
     this.info.push('Объём щита: ' + this.maxShield);
     this.info.push('Восстановление: ' + this.accShield);
   }

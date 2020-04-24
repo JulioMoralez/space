@@ -1,18 +1,35 @@
 import {Ship} from '../ship';
 
 export enum Equip {
-  ARMOR, CAPACITOR, CARGOBAY, FUELTANK, LASERGUN, ROCKETLAUNCHER, SHIELD
+  ARMOR, CAPACITOR, CARGOBAY, FUELTANK, LASERGUN, ROCKETLAUNCHER, SHIELD, GOODS
 }
 
 export class Equipment {
-  private _id = 0;
+  private _id = -1;
+  private _label = '00';
   private _name = '';
   private _info: string[] = [];
   private _type: Equip;
+  private _price = 0;
 
+
+  get price(): number {
+    return this._price;
+  }
+
+  set price(value: number) {
+    this._price = value;
+  }
+
+  get label(): string {
+    return this._label;
+  }
+
+  set label(value: string) {
+    this._label = value;
+  }
 
   constructor() {
-    this._id = -1;
   }
 
   get id(): number {

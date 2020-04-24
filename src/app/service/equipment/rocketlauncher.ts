@@ -4,16 +4,43 @@ import {Rocket} from '../rocket';
 
 export class Rocketlauncher extends Equipment{
 
-  private _damage = 40;
+  private _damage = 1;
   private _speed = 10;
   private _maxRange = 300;
-  private _maxHp = 3;
+  private _maxHp = 1;
 
-  constructor() {
+  constructor(i: number) {
     super();
+    switch (i) {
+      case 1: {
+        this.damage = 1;
+        this.speed = 100;
+        this.maxRange = 100;
+        this.maxHp = 1;
+        this.price = 10;
+        break;
+      }
+      case 2: {
+        this.damage = 5;
+        this.speed = 100;
+        this.maxRange = 100;
+        this.maxHp = 1;
+        this.price = 20;
+        break;
+      }
+      case 3: {
+        this.damage = 10;
+        this.speed = 100;
+        this.maxRange = 100;
+        this.maxHp = 2;
+        this.price = 30;
+        break;
+      }
+    }
     this.type = Equip.ROCKETLAUNCHER;
-    this.id = 1;
-    this.name = 'Ракетная установка 1';
+    this.id = i;
+    this.label = 'R' + i;
+    this.name = 'Ракетная установка ' + i;
     this.info.push('Урон: ' + this._damage);
     this.info.push('Скорость: ' + this._speed);
     this.info.push('Дальность: ' + this._maxRange);

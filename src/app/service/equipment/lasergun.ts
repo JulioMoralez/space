@@ -9,11 +9,38 @@ export class Lasergun extends Equipment{
   private _speed = 100;
   private _maxRange = 100;
 
-  constructor() {
+  constructor(i: number) {
     super();
+    switch (i) {
+      case 1: {
+        this.damage = 1;
+        this.energy = 1;
+        this.speed = 100;
+        this.maxRange = 100;
+        this.price = 10;
+        break;
+      }
+      case 2: {
+        this.damage = 2;
+        this.energy = 1;
+        this.speed = 200;
+        this.maxRange = 100;
+        this.price = 20;
+        break;
+      }
+      case 3: {
+        this.damage = 5;
+        this.energy = 2;
+        this.speed = 100;
+        this.maxRange = 50;
+        this.price = 30;
+        break;
+      }
+    }
     this.type = Equip.LASERGUN;
-    this.id = 1;
-    this.name = 'Лазер 1';
+    this.id = i;
+    this.label = 'L' + i;
+    this.name = 'Лазер ' + i;
     this.info.push('Урон: ' + this._damage);
     this.info.push('Расход энергии: ' + this._energy);
     this.info.push('Скорость: ' + this._speed);

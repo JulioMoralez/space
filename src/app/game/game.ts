@@ -8,7 +8,11 @@ import {Joy} from '../service/joy';
 import {Orb, TypeOrb} from '../service/orb';
 import {Ship} from '../service/ship';
 import {Menu} from '../service/menu';
+import {Equipment} from '../service/equipment/equipment';
 
+export enum Trade {
+  NONE, SHIP, INVENTORY, MARKET
+}
 
 @Component({
   selector: 'app-game',
@@ -49,6 +53,11 @@ export class GameComponent implements OnInit {
                 new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
   menu = new Menu();
   playerShip: Ship = null;
+  public inventory: Equipment[] = [];
+  public market: Equipment[] = [];
+  emptyEquipment: Equipment = new Equipment();
+  public trade = Trade.NONE;
+  public credits = 100;
 
 
   ngOnInit(): void {
