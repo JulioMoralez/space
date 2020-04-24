@@ -1,12 +1,21 @@
 
 {{globalCount}}
 {{figures.length}}
+{{playerShip.currentEnergy}}
 
-<div class="ml-5">
-<canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+<div class="container ml-5">
+  <div class="row">
+    <div class="col">
+      <canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+    </div>
+    <div class="col">
+      <app-inventory></app-inventory>
+    </div>
+  </div>
 </div>
-<button class="btn btn-outline-info  " type="submit" (click)="start()">Запустить</button>
+
 <p>
+ <button class="btn btn-outline-info  " type="submit" (click)="start()">Запустить</button>
 <button class="btn btn-outline-info  " type="submit" (click)="povorot(-10)">A</button>
 <button class="btn btn-outline-info  " type="submit" (click)="povorot(10)">D</button>
 <button class="btn btn-outline-info  " type="submit" (click)="forward(5)">W</button>

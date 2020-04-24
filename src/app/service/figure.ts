@@ -1,10 +1,10 @@
 import {Point} from './point';
 import {Line} from './line';
-import {Shield} from './shield';
-import {Capacitor} from './capacitor';
-import {Equipment} from './equipment';
-import {Lasergun} from './lasergun';
-import {Rocketlauncher} from './rocketlauncher';
+import {Shield} from './equipment/shield';
+import {Capacitor} from './equipment/capacitor';
+import {Equipment} from './equipment/equipment';
+import {Lasergun} from './equipment/lasergun';
+import {Rocketlauncher} from './equipment/rocketlauncher';
 
 export enum State {
   IDLE, FOLLOW, DOCKING, DOCK, DEAD
@@ -32,7 +32,9 @@ export class Figure {
   private _pointBeforeDock = new Point(0, 0);
   private _scale = 1; // масштаб объекта
   private _maxHp = 4;
-  private _hp = this._maxHp;
+  private _currentHp = this._maxHp;
+  private _maxShield = 0;
+  private _currentShield = this._maxShield;
   private minTargetWidth = 5;
   private maxTargetWidth = 10;
   private currentTargetWidth = this.minTargetWidth;
@@ -40,52 +42,21 @@ export class Figure {
   private currentTargetRot = 1;
   private maxTargetRot = 10;
   private _figures: Figure[] = [];
-  private _equipments: Equipment[] = [];
-  private _shield: Shield = null;
-  private _capacitor: Capacitor = null;
-  private _lasergun: Lasergun = null;
-  private _rocketlauncher: Rocketlauncher = null;
 
-
-  get lasergun(): Lasergun {
-    return this._lasergun;
+  get maxShield(): number {
+    return this._maxShield;
   }
 
-  set lasergun(value: Lasergun) {
-    this._lasergun = value;
+  set maxShield(value: number) {
+    this._maxShield = value;
   }
 
-  get rocketlauncher(): Rocketlauncher {
-    return this._rocketlauncher;
+  get currentShield(): number {
+    return this._currentShield;
   }
 
-  set rocketlauncher(value: Rocketlauncher) {
-    this._rocketlauncher = value;
-  }
-
-  get equipments(): Equipment[] {
-    return this._equipments;
-  }
-
-  set equipments(value: Equipment[]) {
-    this._equipments = value;
-  }
-
-  get shield(): Shield {
-    return this._shield;
-  }
-
-  set shield(value: Shield) {
-    this._shield = value;
-  }
-
-
-  get capacitor(): Capacitor {
-    return this._capacitor;
-  }
-
-  set capacitor(value: Capacitor) {
-    this._capacitor = value;
+  set currentShield(value: number) {
+    this._currentShield = value;
   }
 
   get maxHp(): number {
@@ -96,12 +67,12 @@ export class Figure {
     this._maxHp = value;
   }
 
-  get hp(): number {
-    return this._hp;
+  get currentHp(): number {
+    return this._currentHp;
   }
 
-  set hp(value: number) {
-    this._hp = value;
+  set currentHp(value: number) {
+    this._currentHp = value;
   }
 
   get figures(): Figure[] {
@@ -116,16 +87,16 @@ export class Figure {
     return this._scale;
   }
 
+  set scale(value: number) {
+    this._scale = value;
+  }
+
   get maxSpeed(): number {
     return this._maxSpeed;
   }
 
   set maxSpeed(value: number) {
     this._maxSpeed = value;
-  }
-
-  set scale(value: number) {
-    this._scale = value;
   }
 
   constructor(point0: Point) {
@@ -277,23 +248,22 @@ export class Figure {
           this.currentTargetRot -= 2 * Math.PI;
         }
       }
-      // щит, хп
-      if (this.shield != null) {
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = '#00F';
-        ctx.strokeStyle = '#DDD';
-        ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7 - 6   + point0.y,
-                  2 * this.radius * this.shield.currentShield / this.shield.maxShield, 5);
-        ctx.stroke();
-        ctx.fill();
-      }
+      // хп
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.fillStyle = '#F00';
       ctx.strokeStyle = '#DDD';
       ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7   + point0.y,
-                2 * this.radius * this.hp / this.maxHp, 5);
+        2 * this.radius * this.currentHp / this.maxHp, 5);
+      ctx.stroke();
+      ctx.fill();
+      // щит
+      ctx.beginPath();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#00F';
+      ctx.strokeStyle = '#DDD';
+      ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7 - 6   + point0.y,
+        2 * this.radius * this.currentShield / this.maxShield, 5);
       ctx.stroke();
       ctx.fill();
     }
@@ -360,7 +330,6 @@ export class Figure {
         const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
         if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
           this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
-          this.targetReach(0); //////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           if (this._state === State.DOCKING) { // стыкуемся
             this.onDock = this._target;
             this._pointBeforeDock.setValue(this._point0);
@@ -447,8 +416,7 @@ export class Figure {
   }
 
   logic() {
-    this.equipments.forEach(equipment => equipment.logic());
-    if (this.hp <= 0) {
+    if (this.currentHp <= 0) {
       this._state = State.DEAD;
       this.figures.splice(this.figures.indexOf(this), 1);
     }
@@ -459,6 +427,6 @@ export class Figure {
     }
   }
 
-  targetReach(damage: number) {
+  targetReach(target: Figure, damage: number) {
   }
 }

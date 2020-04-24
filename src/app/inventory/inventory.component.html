@@ -1,0 +1,31 @@
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.ARMOR)" type="submit" (click)="getInfo(Equip.ARMOR)">Броня</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.CAPACITOR)" type="submit" (click)="getInfo(Equip.CAPACITOR)">Энергосистема</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.CARGOBAY)" type="submit" (click)="getInfo(Equip.CARGOBAY)">Грузовой отсек</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.FUELTANK)" type="submit" (click)="getInfo(Equip.FUELTANK)">Топливный бак</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.LASERGUN)" type="submit" (click)="getInfo(Equip.LASERGUN)">Лазер</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.ROCKETLAUNCHER)" type="submit" (click)="getInfo(Equip.ROCKETLAUNCHER)">Ракетная установка</button>
+<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.SHIELD)" type="submit" (click)="getInfo(Equip.SHIELD)">Щит</button>
+<div>
+  {{this.id}}
+</div>
+<div>
+  {{this.name}}
+</div>
+<div>
+  {{this.info}}
+</div>
+<button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="deleteE()">Снять</button>
+
+<table border="0" align="center" cellpadding="4" table-layout="fixed">
+  <tr>
+    <td *ngFor="let thing of inventory; let i=index">
+      <div>
+        <button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="getInfoFromInv(i)">{{thing.id}}</button>
+      </div>
+    </td>
+    <td>
+      <button class="btn btn-outline-info my-2 my-sm-0 mx-1" type="submit" (click)="setE()">Установить</button>
+    </td>
+  </tr>
+</table>
+

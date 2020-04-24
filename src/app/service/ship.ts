@@ -2,19 +2,129 @@ import {Figure, State} from './figure';
 import {UtilService} from './util.service';
 import {Point} from './point';
 import {Line} from './line';
-import {Shield} from './shield';
-import {Capacitor} from './capacitor';
-import {Lasergun} from './lasergun';
-import {Rocketlauncher} from './rocketlauncher';
+import {Shield} from './equipment/shield';
+import {Capacitor} from './equipment/capacitor';
+import {Lasergun} from './equipment/lasergun';
+import {Rocketlauncher} from './equipment/rocketlauncher';
+import {Equip, Equipment} from './equipment/equipment';
+import {Armor} from './equipment/armor';
+import {Cargobay} from './equipment/cargobay';
+import {Fueltank} from './equipment/fueltank';
 
 export class Ship extends Figure {
 
   private _playerShip = false;
+  // private _equipments: Equipment[] = [];
+  private _equipments = new Map();
+  // hp из figure
+  // shield из figure
+  private _maxEnergy = 3;
+  private _currentEnergy = this._maxEnergy;
+  private _maxAccEnergy = 0;
+  private _currentAccEnergy = this.maxAccEnergy;
+  private _cargo = 4;
+  private _maxFuel = 7;
+  private _currentFuel = this._maxFuel;
+  private _maxAccShield = 0;
+  private _currentAccShield = this.maxAccShield;
+  private _currentRocket = 3;
+
+
+  get currentRocket(): number {
+    return this._currentRocket;
+  }
+
+  set currentRocket(value: number) {
+    this._currentRocket = value;
+  }
+
+  get currentAccEnergy(): number {
+    return this._currentAccEnergy;
+  }
+
+  set currentAccEnergy(value: number) {
+    this._currentAccEnergy = value;
+  }
+
+  get currentAccShield(): number {
+    return this._currentAccShield;
+  }
+
+  set currentAccShield(value: number) {
+    this._currentAccShield = value;
+  }
+
+  get playerShip(): boolean {
+    return this._playerShip;
+  }
 
   set playerShip(value: boolean) {
     this._playerShip = value;
   }
 
+  get equipments(): Map<any, any> {
+    return this._equipments;
+  }
+
+  set equipments(value: Map<any, any>) {
+    this._equipments = value;
+  }
+
+  get maxEnergy(): number {
+    return this._maxEnergy;
+  }
+
+  set maxEnergy(value: number) {
+    this._maxEnergy = value;
+  }
+
+  get currentEnergy(): number {
+    return this._currentEnergy;
+  }
+
+  set currentEnergy(value: number) {
+    this._currentEnergy = value;
+  }
+
+  get maxAccEnergy(): number {
+    return this._maxAccEnergy;
+  }
+
+  set maxAccEnergy(value: number) {
+    this._maxAccEnergy = value;
+  }
+
+  get cargo(): number {
+    return this._cargo;
+  }
+
+  set cargo(value: number) {
+    this._cargo = value;
+  }
+
+  get maxFuel(): number {
+    return this._maxFuel;
+  }
+
+  set maxFuel(value: number) {
+    this._maxFuel = value;
+  }
+
+  get currentFuel(): number {
+    return this._currentFuel;
+  }
+
+  set currentFuel(value: number) {
+    this._currentFuel = value;
+  }
+
+  get maxAccShield(): number {
+    return this._maxAccShield;
+  }
+
+  set maxAccShield(value: number) {
+    this._maxAccShield = value;
+  }
 
   constructor(point0: Point, figures: Figure[]) {
     super(point0);
@@ -30,19 +140,34 @@ export class Ship extends Figure {
     this.lines.push(new Line(1, 3, color, width));
     this.lines.push(new Line(3, 0, 'green', 5));
     this.lines.push(new Line(0, 2, color, width));
-    this.shield = new Shield();
-    this.equipments.push(this.shield);
-    this.capacitor = new Capacitor();
-    this.equipments.push(this.capacitor);
-    this.lasergun = new Lasergun();
-    this.equipments.push(this.lasergun);
-    this.rocketlauncher = new Rocketlauncher();
-    this.equipments.push(this.rocketlauncher);
+    this.installEquip(new Armor());
+    this.installEquip(new Capacitor());
+    this.installEquip(new Cargobay());
+    this.installEquip(new Fueltank());
+    this.installEquip(new Shield());
+    this.installEquip(new Lasergun());
+    this.installEquip(new Rocketlauncher());
+  }
+
+  draw(ctx: CanvasRenderingContext2D, point0: Point) {
+    super.draw(ctx, point0);
+  }
+
+  installEquip(equipment: Equipment) {
+    equipment.install(this, 1);
   }
 
   logic() {
     super.logic();
-    if (!this._playerShip) {
+    let t = 0;
+    // щит
+    t = (this.currentShield + this.maxAccShield > this.maxShield) ? this.maxShield : this.currentShield + this.maxAccShield;
+    this.currentShield = this.currentShield > 0 ? t : 0;
+    // энергия
+    t = (this.currentEnergy + this.maxAccEnergy > this.maxEnergy) ? this.maxEnergy : this.currentEnergy + this.maxAccEnergy;
+    this.currentEnergy = this.currentEnergy > 0 ? t : 0;
+    this.equipments.forEach(equipment => equipment.logic());
+    if (!this.playerShip) {
       if (this.chekpoints.length === 0) {
         this.chekpoints.push(new Point(UtilService.getRandomInteger(100, 1000), UtilService.getRandomInteger(100, 1000)));
       }
@@ -50,14 +175,14 @@ export class Ship extends Figure {
   }
 
   fireRocket() {
-    if (this.rocketlauncher !== null) {
-      this.rocketlauncher.fireRocket(this);
+    if (this.equipments.has(Equip.ROCKETLAUNCHER)) {
+      this.equipments.get(Equip.ROCKETLAUNCHER).fireRocket(this);
     }
   }
 
   fireLaser() {
-    if (this.lasergun !== null) {
-      this.lasergun.fireLaser(this);
+    if (this.equipments.has(Equip.LASERGUN)) {
+      this.equipments.get(Equip.LASERGUN).fireLaser(this);
     }
   }
 }

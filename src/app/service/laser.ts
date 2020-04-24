@@ -1,18 +1,23 @@
 import {Weapon} from './weapon';
 import {Figure, State} from './figure';
 import {Point} from './point';
+import {Ship} from './ship';
+import {Equip} from './equipment/equipment';
 
 export class Laser extends Weapon{
   private sin = 0;
   private cos = 0;
   private length = 100;
-  private speedLaser = 20;
+  private laserSpeed = 0;
 
-
-  constructor(launcher: Figure) {
+  constructor(launcher: Ship) {
     super(launcher);
-    this.damage = 1;
-    this.maxRange = 100;
+    if (this.launcher.equipments.has(Equip.LASERGUN)) {
+      const l = this.launcher.equipments.get(Equip.LASERGUN);
+      this.damage = l.damage;
+      this.maxRange = l.maxRange;
+      this.laserSpeed = l.speed;
+    }
     const dx = this.point0.x - this.target.point0.x;
     const dy = this.point0.y - this.target.point0.y;
     const h = Math.sqrt(dx * dx + dy * dy);
@@ -31,21 +36,12 @@ export class Laser extends Weapon{
 
   logic() {
     super.logic();
-    this.point0.x -= this.speedLaser * this.cos; // смещаем лазер
-    this.point0.y -= this.speedLaser * this.sin;
-
-    for (const figure of this.figures) {
-      if (figure !== this.launcher) {
-        if (!(figure instanceof Laser)) {
-          if (figure.checkOnArea(this.point0.x - this.length * this.cos, this.point0.y - this.length * this.sin)) {
-            console.log('12341');
-            super.targetReach(this.launcher.lasergun.damage);
-            // figure.hp -= this.damage;
-            // this.state = State.DEAD;
-            // this.figures.splice(this.figures.indexOf(this), 1); // удаляем лазер
-            break;
-          }
-        }
+    this.point0.x -= this.laserSpeed * this.cos; // смещаем лазер
+    this.point0.y -= this.laserSpeed * this.sin;
+    if (this.target !== null) {
+      // лазер летит к цели, ничего не перекрывает его
+      if (this.target.checkOnArea(this.point0.x - this.length * this.cos, this.point0.y - this.length * this.sin)) {
+        super.targetReach(this.target, this.damage);
       }
     }
   }

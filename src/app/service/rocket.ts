@@ -2,18 +2,25 @@ import {Figure, State} from './figure';
 import {Point} from './point';
 import {Line} from './line';
 import {Weapon} from './weapon';
+import {Laser} from './laser';
+import {Ship} from './ship';
+import {Equip} from './equipment/equipment';
 
 export class Rocket extends Weapon{
 
-  constructor(launcher: Figure) {
+  constructor(launcher: Ship) {
     super(launcher);
-    this.damage = 1;
-    this.maxHp = 1;
-    this.hp = this.maxHp;
-    this.maxSpeed = 10;
+    if (this.launcher.equipments.has(Equip.ROCKETLAUNCHER)) {
+      const r = this.launcher.equipments.get(Equip.ROCKETLAUNCHER);
+      this.damage = r.damage;
+      this.maxRange = r.maxRange;
+      this.maxHp = r.maxHp;
+      this.maxSpeed = r.speed;
+    }
+    this.currentHp = this.maxHp;
+    this.currentSpeed = 0;
     this.scale = 0.3;
     this.radius = 100 * this.scale;
-    this.maxRange = 200;
     this.points.push(new Point(this.point0.x, this.point0.y - 150 * this.scale));
     this.points.push(new Point(this.point0.x + 20 * this.scale, this.point0.y - 40 * this.scale));
     this.points.push(new Point(this.point0.x + 20 * this.scale, this.point0.y));
@@ -44,8 +51,19 @@ export class Rocket extends Weapon{
 
   logic() {
     super.logic();
-    if (this.target === null) {
+    if (this.target === null) { // если цель исчезла, то прекращаем движение ракеты
       this.chekpoints.length = 0;
+    } else {
+      for (const figure of this.figures) {
+        if ((figure !== this.launcher) && (figure !== this)) {
+          if (!(figure instanceof Laser)) {
+            if (figure.checkOnArea(this.point0.x, this.point0.y)) {
+              super.targetReach(figure, this.damage);
+              break;
+            }
+          }
+        }
+      }
     }
   }
 

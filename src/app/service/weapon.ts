@@ -1,13 +1,14 @@
 import {Figure, State} from './figure';
 import {Point} from './point';
+import {Ship} from './ship';
 
 export class Weapon extends Figure{
-  private _launcher: Figure = null;
+  private _launcher: Ship = null;
   private _damage = 1;
   private _currentRange = 0;
   private _maxRange = 200;
 
-  constructor(launcher: Figure) {
+  constructor(launcher: Ship) {
     super(new Point(launcher.point0.x, launcher.point0.y));
     this.launcher = launcher;
     this.figures = launcher.figures;
@@ -16,11 +17,11 @@ export class Weapon extends Figure{
 
   }
 
-  get launcher(): Figure {
+  get launcher(): Ship {
     return this._launcher;
   }
 
-  set launcher(value: Figure) {
+  set launcher(value: Ship) {
     this._launcher = value;
   }
 
@@ -58,16 +59,19 @@ export class Weapon extends Figure{
     this.currentRange++;
   }
 
-  targetReach(damage: number) { // цель достигнута
-    if (this.target.shield !== null) {
-      console.log(damage);
-      this.target.shield.currentShield -= damage;
-      if (this.target.shield.currentShield < 0) {
-        this.target.hp -= this.target.shield.currentShield;
-      }
-    } else {
-      this.target.hp -= damage;
+  targetReach(target: Figure, damage: number) { // цель достигнута
+    if (target === null) {
+      return;
     }
+    let damageHp = target.currentHp; // через локальную переменную, чтобы в анимацию не попадало отрицательных значений
+    const damageSh = target.currentShield - damage;
+    if (damageSh < 0) {
+      target.currentShield = 0;
+      damageHp += damageSh;
+    } else {
+      target.currentShield = damageSh;
+    }
+    target.currentHp = damageHp < 0 ? 0 : damageHp;
     this.state = State.DEAD;
     this.figures.splice(this.figures.indexOf(this), 1); // удаляем объект с карты
   }

@@ -149,30 +149,24 @@ export class GameComponent implements OnInit {
     this.ctx.beginPath();
     this.ctx.rect(scaleX, scaleY + 40, maxScale, 12);
     this.ctx.stroke();
-    if (this.playerShip.capacitor !== null) {
-      this.ctx.beginPath();
-      this.ctx.fillStyle = 'yellow';
-      this.ctx.rect(scaleX, scaleY, maxScale * this.playerShip.capacitor.currentEnergy / this.playerShip.capacitor.maxEnergy, 12);
-      this.ctx.fill();
-    }
-    if (this.playerShip.shield !== null) {
-      this.ctx.beginPath();
-      this.ctx.rect(scaleX, scaleY + 20, maxScale * this.playerShip.shield.currentShield / this.playerShip.shield.maxShield, 12);
-      this.ctx.fillStyle = '#00F';
-      this.ctx.fill();
-    }
     this.ctx.beginPath();
-    this.ctx.rect(scaleX, scaleY + 40, maxScale * this.playerShip.hp / this.playerShip.maxHp, 12);
+    this.ctx.fillStyle = 'yellow';
+    this.ctx.rect(scaleX, scaleY, maxScale * this.playerShip.currentEnergy / this.playerShip.maxEnergy, 12);
+    this.ctx.fill();
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY + 20, maxScale * this.playerShip.currentShield / this.playerShip.maxShield, 12);
+    this.ctx.fillStyle = '#00F';
+    this.ctx.fill();
+    this.ctx.beginPath();
+    this.ctx.rect(scaleX, scaleY + 40, maxScale * this.playerShip.currentHp / this.playerShip.maxHp, 12);
     this.ctx.fillStyle = '#F00';
     this.ctx.fill();
     // ракеты в запасе
-    if (this.playerShip.rocketlauncher !== null) {
-      for (let i = 0; i < this.playerShip.rocketlauncher.currentRocket; i++) {
-        this.ctx.beginPath();
-        this.ctx.rect(scaleX + i * 20, scaleY + 60, 12, 12);
-        this.ctx.fillStyle = '#00F';
-        this.ctx.fill();
-      }
+    for (let i = 0; i < this.playerShip.currentRocket; i++) {
+      this.ctx.beginPath();
+      this.ctx.rect(scaleX + i * 20, scaleY + 60, 12, 12);
+      this.ctx.fillStyle = '#00F';
+      this.ctx.fill();
     }
 
 
