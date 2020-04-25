@@ -9,6 +9,9 @@ import {Orb, TypeOrb} from '../service/orb';
 import {Ship} from '../service/ship';
 import {Menu} from '../service/menu';
 import {Equipment} from '../service/equipment/equipment';
+import {Starmap} from '../service/starmap';
+import {Solar} from '../service/solar';
+import {resolveGlobs} from 'tslint/lib/files/resolution';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -58,6 +61,9 @@ export class GameComponent implements OnInit {
   emptyEquipment: Equipment = new Equipment();
   public trade = Trade.NONE;
   public credits = 100;
+  solars: Solar[] = [];
+  starmap: Starmap = null;
+  starmapView = false;
 
 
   ngOnInit(): void {
@@ -66,7 +72,6 @@ export class GameComponent implements OnInit {
 
   @HostListener('window:keypress', ['$event']) spaceEvent(event: any) {
     this.key = event.key;
-    console.log(event);
   }
 
   start() {
@@ -199,6 +204,9 @@ export class GameComponent implements OnInit {
     for (const figure of this.figures) {
       this.drawOnMiniMap(figure);
     }
+    if (this.starmapView) {
+      this.starmap.draw(this.ctx);
+    }
   }
 
   drawOnMiniMap(figure: Figure) {
@@ -222,6 +230,10 @@ export class GameComponent implements OnInit {
       this.stars.push(
         new Star(UtilService.getRandomInteger(0, this.maxAreaX), UtilService.getRandomInteger(0, this.maxAreaY), i));
     }
+
+    this.solars = Solar.generate(256);
+    this.starmap =
+      new Starmap(this.maxAreaX - this.borderMap - this.menuX, this.maxAreaY - 2 * this.borderMap, this.borderMap, this.solars);
 
     this.figures[0] = new Orb(new Point(this.maxMapX / 2, this.maxMapY / 2), TypeOrb.SUN, 100, 'yellow', 'red');
     this.figures[1] = new Orb(new Point(0, 0), TypeOrb.PLANET, 50, 'yellow', 'green');
@@ -251,6 +263,9 @@ export class GameComponent implements OnInit {
   mouseMove($event: MouseEvent) {
     this.joy.use($event.offsetX, $event.offsetY, this.point0);
     this.menu.use($event.offsetX, $event.offsetY, this.point0);
+    if (this.starmapView) {
+      this.starmap.use($event.offsetX, $event.offsetY);
+    }
   }
 
   mouseDown($event: MouseEvent) {
@@ -259,15 +274,20 @@ export class GameComponent implements OnInit {
     if (this.joy.checkOnArea(x, y)) {
       this.joy.start(x, y, this.point0);
     } else {
-      if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
+      if (this.starmapView) {
+        this.starmap.start(x, y);
+      } else {
+        if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
           ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
-        this.menu.start(x, y, this.point0);
+          this.menu.start(x, y, this.point0);
+        }
       }
     }
   }
 
   mouseUp() {
     this.joy.reset();
+    this.starmap.reset();
     switch (this.menu.reset()) {
       case 1: { // выбор
         for (const figure of this.figures) {
@@ -315,5 +335,13 @@ export class GameComponent implements OnInit {
 
   fireLaser() {
     this.playerShip.fireLaser();
+  }
+
+  mouseWheel($event: WheelEvent) {
+    this.starmap.mouseWheel($event.deltaY)
+  }
+
+  starmapSwitch() {
+    this.starmapView = ! this.starmapView;
   }
 }

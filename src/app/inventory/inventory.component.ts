@@ -7,6 +7,7 @@ import {Armor} from '../service/equipment/armor';
 import {Shield} from '../service/equipment/shield';
 import {Goods} from '../service/equipment/goods';
 import {Cargobay} from '../service/equipment/cargobay';
+import {UtilService} from '../service/util.service';
 
 @Component({
   selector: 'app-inventory',
@@ -19,11 +20,12 @@ export class InventoryComponent implements OnInit {
   public name = '';
   public price = 0;
   public info: string[] = [];
-  private  equipment: Equipment = null;
+  public  equipment: Equipment = null;
   Equip = Equip;
   Trade = Trade;
   private index = -1;
   myStyle = 'btn btn-outline-info my-2 my-sm-0 mx-1';
+  private oldCargo: number;
 
   constructor(public game: GameComponent) { }
 
@@ -35,6 +37,10 @@ export class InventoryComponent implements OnInit {
     this.game.inventory[1] = new Lasergun(2);
     this.game.inventory[2] = new Goods(2);
     this.game.inventory[3] = new Cargobay(1);
+    this.game.inventory[4] = new Cargobay(1);
+    this.game.inventory[5] = new Cargobay(1);
+    this.game.inventory[6] = new Cargobay(1);
+    this.game.inventory[7] = new Cargobay(1);
   }
 
   getInfo(i: number) {
@@ -50,10 +56,15 @@ export class InventoryComponent implements OnInit {
 
   deleteE() {
     let success = 0;
+    this.oldCargo = this.game.playerShip.maxCargo;
     for (let i = 0; i < this.game.inventory.length ; i++) {
       if (this.game.inventory[i] === this.game.emptyEquipment) {
         this.equipment.install(this.game.playerShip, -1);
         this.game.inventory[i] = this.equipment;
+        if (!this.recalcCargo()) {
+          this.equipment.install(this.game.playerShip, 1);
+          this.game.inventory[i] = this.game.emptyEquipment;
+        }
         this.equipment = null;
         this.game.trade = Trade.NONE;
         success = 1;
@@ -77,17 +88,51 @@ export class InventoryComponent implements OnInit {
 
   setE() {
     let e: Equipment = null;
+    this.oldCargo = this.game.playerShip.maxCargo;
     if (this.game.playerShip.equipments.has(this.equipment.type)) { // заменв оборудования
       e = this.game.playerShip.equipments.get(this.equipment.type);
       e.install(this.game.playerShip, -1);
     }
-    this.game.playerShip.installEquip(this.equipment);
-    if (e !== null) {
-      this.game.inventory[this.index] = e;
+    this.equipment.install(this.game.playerShip, 1);
+    if (!this.recalcCargo()) {  // проверяем, поместится ли весь груз
+      this.equipment.install(this.game.playerShip, -1);
+      if (e !== null) {
+        e.install(this.game.playerShip, 1);
+      }
     } else {
-      this.game.inventory[this.index] = this.game.emptyEquipment;
+      if (e !== null) {
+        this.game.inventory[this.index] = e;
+      } else {
+        this.game.inventory[this.index] = this.game.emptyEquipment;
+      }
     }
+
     this.game.trade = Trade.NONE;
+  }
+
+  private recalcCargo(): boolean { // false - нет места разместить весь груз
+    if (this.oldCargo < this.game.playerShip.maxCargo) { // грузовой отсек стал больше
+      for (let i = 0; i < this.game.playerShip.maxCargo - this.oldCargo; i++) {
+        this.game.inventory.push(this.game.emptyEquipment);
+      }
+    }
+    if (this.oldCargo > this.game.playerShip.maxCargo) { // если грузовой отсек стал меньше
+      const currentBusyCargo = this.game.inventory.filter(value => value !== this.game.emptyEquipment).length;
+      if (currentBusyCargo <= this.game.playerShip.maxCargo) { // проверяем, влезает ли всё, что имеется
+        const newInventory = this.game.inventory.filter(value => value !== this.game.emptyEquipment);
+        newInventory.length = this.game.playerShip.maxCargo;
+        for (let i = 0; i < newInventory.length; i++) {
+          if (newInventory[i] === undefined) {
+            newInventory[i] = this.game.emptyEquipment;
+          }
+        }
+        this.game.inventory = newInventory;
+      } else {  // иначе не проводим операцию по смене объёма
+        console.log('недостаточно места разместить весь груз');
+        return false;
+      }
+    }
+    return true;
   }
 
   sell() {

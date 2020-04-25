@@ -1,11 +1,24 @@
 
 {{globalCount}}
 {{credits}} cr.
+<button class="btn btn-outline-info  " type="submit" (click)="start()">Запустить</button>
+<button class="btn btn-outline-info  " type="submit" (click)="povorot(-10)">A</button>
+<button class="btn btn-outline-info  " type="submit" (click)="povorot(10)">D</button>
+<button class="btn btn-outline-info  " type="submit" (click)="forward(5)">W</button>
+<button class="btn btn-outline-info  " type="submit" (click)="forward(-5)">S</button>
+
+<button class="btn btn-outline-info  " type="submit" (click)="moveToTarget()">Движение к цели</button>
+<button class="btn btn-outline-info  " type="submit" (click)="followToTarget()">Движение за целью</button>
+<button class="btn btn-outline-info  " type="submit" (click)="dock()">Стыковка</button>
+<button class="btn btn-outline-info  " type="submit" (click)="undock()">Вылет</button>
+<button class="btn btn-outline-info  " type="submit" (click)="fireRocket()">Выстрел 1</button>
+<button class="btn btn-outline-info  " type="submit" (click)="fireLaser()">Выстрел 2</button>
+<button class="btn btn-outline-info  " type="submit" (click)="starmapSwitch()">Карта</button>
 
 <div class="container ml-5">
   <div class="row">
     <div class="col">
-      <canvas #canvas123 id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+      <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
     </div>
     <div class="col">
       <app-inventory></app-inventory>
@@ -15,16 +28,5 @@
 </div>
 
 <p>
- <button class="btn btn-outline-info  " type="submit" (click)="start()">Запустить</button>
-<button class="btn btn-outline-info  " type="submit" (click)="povorot(-10)">A</button>
-<button class="btn btn-outline-info  " type="submit" (click)="povorot(10)">D</button>
-<button class="btn btn-outline-info  " type="submit" (click)="forward(5)">W</button>
-<button class="btn btn-outline-info  " type="submit" (click)="forward(-5)">S</button>
 
-  <button class="btn btn-outline-info  " type="submit" (click)="moveToTarget()">Движение к цели</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="followToTarget()">Движение за целью</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="dock()">Стыковка</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="undock()">Вылет</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="fireRocket()">Выстрел 1</button>
-  <button class="btn btn-outline-info  " type="submit" (click)="fireLaser()">Выстрел 2</button>
 

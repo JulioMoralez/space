@@ -142,7 +142,7 @@ export class Ship extends Figure {
     this.lines.push(new Line(0, 2, color, width));
     this.installEquip(new Armor(1));
     this.installEquip(new Capacitor(1));
-    // this.installEquip(new Cargobay(1));
+    this.installEquip(new Cargobay(2));
     this.installEquip(new Fueltank(1));
     this.installEquip(new Shield(1));
     this.installEquip(new Lasergun(1));
