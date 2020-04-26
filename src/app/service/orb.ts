@@ -18,6 +18,17 @@ export class Orb extends Figure{
   private du = 0; // Текущий угол. Перемещение объекта по эллипсу
   private cosU = 0; //
   private sinU = 0; //
+  private _name = '';
+
+
+  get name(): string {
+    return this._name;
+  }
+
+  set name(value: string) {
+    this._name = value;
+  }
+
 
 
   constructor(point0: Point, typeOrb: TypeOrb, radius: number, colorFill: string, colorBorder: string) {
@@ -28,12 +39,13 @@ export class Orb extends Figure{
     this.colorBorder = colorBorder;
   }
 
-  setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number) {
+  setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number, du: number) {
     this.parentFigure = parentFigure;
     this.orbitX = orbitX;
     this.orbitY = orbitY;
     this.orbitSpeed = Math.PI / orbitSpeed;
     this.u = u;
+    this.du = du;
     this.cosU = Math.cos(u); // заранее считаем один раз
     this.sinU = Math.sin(u); // заранее считаем один раз
   }

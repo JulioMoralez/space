@@ -31,13 +31,11 @@ export class GameComponent implements OnInit {
   private ctx: CanvasRenderingContext2D;
 
   stars: Star[] = [];
-  colors: string[] = ['#7fffd4', 'blue'];
-  key = '1';
-  color = 'black';
-  flag = false;
   globalCount = 0;
   private sub: Subscription = null;
   countStars = 100;
+  startSystem = 0;
+  currentSystem = this.startSystem;
   maxAreaX = 1300;
   maxAreaY = 800;
   maxMapX = this.maxAreaX * 2;
@@ -45,6 +43,8 @@ export class GameComponent implements OnInit {
   borderMap = 50; // толщина границы карты
   menuX = 300;
   menuY = 600;
+  maxStarmapX = this.maxAreaX - 2 * this.borderMap - this.menuX;
+  maxStarmapY =  this.maxAreaY - 2 * this.borderMap;
   borderMinimap = 10;
   minimapXY = this.menuX - 2 * this.borderMinimap;
   visibleAreaOnMinimapX = this.maxAreaX * this.minimapXY / this.maxMapX;
@@ -68,10 +68,6 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     this.initGameObjects();
-  }
-
-  @HostListener('window:keypress', ['$event']) spaceEvent(event: any) {
-    this.key = event.key;
   }
 
   start() {
@@ -205,7 +201,7 @@ export class GameComponent implements OnInit {
       this.drawOnMiniMap(figure);
     }
     if (this.starmapView) {
-      this.starmap.draw(this.ctx);
+      this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel);
     }
   }
 
@@ -231,25 +227,17 @@ export class GameComponent implements OnInit {
         new Star(UtilService.getRandomInteger(0, this.maxAreaX), UtilService.getRandomInteger(0, this.maxAreaY), i));
     }
 
-    this.solars = Solar.generate(256);
+    this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY);
     this.starmap =
-      new Starmap(this.maxAreaX - this.borderMap - this.menuX, this.maxAreaY - 2 * this.borderMap, this.borderMap, this.solars);
-
-    this.figures[0] = new Orb(new Point(this.maxMapX / 2, this.maxMapY / 2), TypeOrb.SUN, 100, 'yellow', 'red');
-    this.figures[1] = new Orb(new Point(0, 0), TypeOrb.PLANET, 50, 'yellow', 'green');
-    this.figures[1].setParent((this.figures[0] as Orb), 600, 400, -500,   3   );
-    this.figures[2] = new Orb(new Point(0, 0), TypeOrb.SATELLITE, 20, 'yellow', 'blue');
-    this.figures[2].setParent((this.figures[1] as Orb), 100, 100, 50,   3  );
-    this.figures[3] = new Orb(new Point(0, 0), TypeOrb.SATELLITE, 10, 'orange', 'yellow');
-    this.figures[3].setParent((this.figures[2] as Orb), 100, 50, -40,   Math.PI / 2  );
-    this.figures[4] = new Orb(new Point(0, 0), TypeOrb.SATELLITE, 15, 'yellow', 'yellow');
-    this.figures[4].setParent((this.figures[3] as Orb), 50, 50, 100,   1  );
+      new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars);
+    this.figures = this.solars[this.startSystem].figures;
 
     this.playerShip = new Ship(new Point(100, 400), this.figures);
     this.playerShip.playerShip = true;
     this.figures.push(this.playerShip);
+    console.log(this.figures);
 
-    this.figures.push( new Ship(new Point(400, 400), this.figures));
+    // this.figures.push( new Ship(new Point(400, 400), this.figures));
   }
 
   forward(speed: number) {
@@ -338,10 +326,18 @@ export class GameComponent implements OnInit {
   }
 
   mouseWheel($event: WheelEvent) {
-    this.starmap.mouseWheel($event.deltaY)
+    this.starmap.mouseWheel($event.deltaY);
   }
 
   starmapSwitch() {
     this.starmapView = ! this.starmapView;
+  }
+
+  hyperjump() {
+    if (this.starmap.target !== 0) {
+      this.figures = [];
+      this.figures = this.solars[this.starmap.target - 1].figures;
+      this.figures.push(this.playerShip);
+    }
   }
 }

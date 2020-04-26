@@ -385,7 +385,7 @@ export class Figure {
   moveOnEllipse(){
   }
 
-  setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number) {
+  setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number, du: number) {
   }
 
   moveToTarget(state: State) {
