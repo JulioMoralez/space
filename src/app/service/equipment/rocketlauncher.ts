@@ -14,7 +14,7 @@ export class Rocketlauncher extends Equipment{
     switch (i) {
       case 1: {
         this.damage = 1;
-        this.speed = 100;
+        this.speed = 10;
         this.maxRange = 100;
         this.maxHp = 1;
         this.price = 10;
@@ -30,7 +30,7 @@ export class Rocketlauncher extends Equipment{
       }
       case 3: {
         this.damage = 10;
-        this.speed = 100;
+        this.speed = 10;
         this.maxRange = 100;
         this.maxHp = 2;
         this.price = 30;

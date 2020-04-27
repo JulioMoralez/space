@@ -230,12 +230,11 @@ export class GameComponent implements OnInit {
     this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY);
     this.starmap =
       new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars);
-    this.figures = this.solars[this.startSystem].figures;
+    this.solars[this.startSystem].figures.forEach(figure => this.figures.push(figure));
 
     this.playerShip = new Ship(new Point(100, 400), this.figures);
     this.playerShip.playerShip = true;
     this.figures.push(this.playerShip);
-    console.log(this.figures);
 
     // this.figures.push( new Ship(new Point(400, 400), this.figures));
   }
@@ -334,10 +333,12 @@ export class GameComponent implements OnInit {
   }
 
   hyperjump() {
-    if (this.starmap.target !== 0) {
-      this.figures = [];
-      this.figures = this.solars[this.starmap.target - 1].figures;
+    if (this.starmap.target !== -1) {
+      this.figures.length = 0;
+      this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
       this.figures.push(this.playerShip);
+      this.currentSystem = this.starmap.target;
     }
   }
+
 }

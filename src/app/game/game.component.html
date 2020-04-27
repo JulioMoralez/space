@@ -16,18 +16,21 @@
 <button class="btn btn-outline-info  " type="submit" (click)="starmapSwitch()">Карта</button>
 <button class="btn btn-outline-info  " type="submit" (click)="hyperjump()">Гиперпрыжок</button>
 
-<div class="container ml-5">
-  <div class="row">
-    <div class="col">
-      <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
-    </div>
-    <div class="col">
-      <app-inventory></app-inventory>
-      <app-market></app-market>
-    </div>
-  </div>
-</div>
-
+<table>
+  <tr>
+    <td>
+      <div class="col">
+        <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+      </div>
+    </td>
+    <td>
+      <div class="col">
+        <app-inventory></app-inventory>
+        <app-market></app-market>
+      </div>
+    </td>
+  </tr>
+</table>
 <p>
 
 

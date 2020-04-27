@@ -117,8 +117,9 @@ export class Solar {
       for (let j = 0; j < len; j++) {
           name = name + this.slog[UtilService.rand(UtilService.randi + i + 3, this.slog.length - 1)];
       }
+      name = name.charAt(0).toUpperCase() + name.slice(1);
       solars[i]._name = name;
-      solars[i]._id = i + 1;
+      solars[i]._id = i;
     }
     solars[0]._color = 'green';
     UtilService.randi = 1;
@@ -136,7 +137,7 @@ export class Solar {
     }
     for (let i = 0; i < num; i++) { // создание солнца в системе
       solars[i]._figures.
-      push(new Orb(new Point(maxMapX / 2, maxMapY / 2), TypeOrb.SUN, solars[i]._radius * 25, solars[i]._color, 'yellow'));
+        push(new Orb(new Point(maxMapX / 2, maxMapY / 2), TypeOrb.SUN, solars[i]._radius * 25, solars[i]._color, 'yellow'));
     }
     UtilService.randi = 1;
     for (let i = 0; i < num; i++) { // число планет в системе

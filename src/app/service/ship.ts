@@ -23,7 +23,7 @@ export class Ship extends Figure {
   private _maxAccEnergy = 0;
   private _currentAccEnergy = this.maxAccEnergy;
   private _maxCargo = 4;
-  private _maxFuel = 7;
+  private _maxFuel = 0;
   private _currentFuel = this._maxFuel;
   private _maxAccShield = 0;
   private _currentAccShield = this.maxAccShield;

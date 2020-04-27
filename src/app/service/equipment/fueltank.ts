@@ -9,17 +9,17 @@ export class Fueltank extends Equipment {
     super();
     switch (i) {
       case 1: {
-        this.maxFuel = 1;
+        this.maxFuel = 7;
         this.price = 10;
         break;
       }
       case 2: {
-        this.maxFuel = 3;
+        this.maxFuel = 10;
         this.price = 20;
         break;
       }
       case 3: {
-        this.maxFuel = 7;
+        this.maxFuel = 15;
         this.price = 30;
         break;
       }
