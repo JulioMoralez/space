@@ -42,7 +42,7 @@ export class GameComponent implements OnInit {
   maxMapY = this.maxAreaY * 2;
   borderMap = 50; // толщина границы карты
   menuX = 300;
-  menuY = 600;
+  menuY = 400;
   maxStarmapX = this.maxAreaX - 2 * this.borderMap - this.menuX;
   maxStarmapY =  this.maxAreaY - 2 * this.borderMap;
   borderMinimap = 10;
@@ -333,11 +333,14 @@ export class GameComponent implements OnInit {
   }
 
   hyperjump() {
-    if (this.starmap.target !== -1) {
-      this.figures.length = 0;
+    if ((this.playerShip.currentFuel >= this.starmap.hyperjumpDistance) &&
+      (this.starmap.target !== -1) &&
+      (this.starmap.target !== this.currentSystem)) { // прыжок в другую систему, если хватает топлива
+      this.figures.length = 0;  // очищаем текущий  массив объектов
       this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
       this.figures.push(this.playerShip);
       this.currentSystem = this.starmap.target;
+      this.playerShip.currentFuel -= this.starmap.hyperjumpDistance;
     }
   }
 

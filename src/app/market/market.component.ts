@@ -3,6 +3,7 @@ import {Equipment} from '../service/equipment/equipment';
 import {Shield} from '../service/equipment/shield';
 import {Armor} from '../service/equipment/armor';
 import {GameComponent, Trade} from '../game/game';
+import {State} from '../service/figure';
 
 @Component({
   selector: 'app-market',
@@ -16,6 +17,7 @@ export class MarketComponent implements OnInit {
   private  equipment: Equipment = null;
   private index = -1;
   Trade = Trade;
+  State = State;
   myStyle = 'btn btn-outline-info my-2 my-sm-0 mx-1';
 
   constructor(public game: GameComponent) { }

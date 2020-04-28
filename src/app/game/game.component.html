@@ -17,16 +17,15 @@
 <button class="btn btn-outline-info  " type="submit" (click)="hyperjump()">Гиперпрыжок</button>
 
 <table>
-  <tr>
+  <tr align="left">
     <td>
       <div class="col">
         <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
       </div>
     </td>
-    <td>
+    <td valign="top">
       <div class="col">
         <app-inventory></app-inventory>
-        <app-market></app-market>
       </div>
     </td>
   </tr>

@@ -1,4 +1,16 @@
-
+.shipDeviceTable {
+  table-layout: fixed;
+  width: 100%;
+}
+.bs0 {
+  width: 150px;
+}
+.bs1 {
+  width: 180px;
+}
+.bs2 {
+  width: 50px;
+}
 .hh1 {
   color: aqua;
 }

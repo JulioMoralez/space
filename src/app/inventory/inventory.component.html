@@ -1,31 +1,153 @@
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.ARMOR)" type="submit" (click)="getInfo(Equip.ARMOR)">Броня</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.CAPACITOR)" type="submit" (click)="getInfo(Equip.CAPACITOR)">Энергосистема</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.CARGOBAY)" type="submit" (click)="getInfo(Equip.CARGOBAY)">Грузовой отсек</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.FUELTANK)" type="submit" (click)="getInfo(Equip.FUELTANK)">Топливный бак</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.LASERGUN)" type="submit" (click)="getInfo(Equip.LASERGUN)">Лазер</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.ROCKETLAUNCHER)" type="submit" (click)="getInfo(Equip.ROCKETLAUNCHER)">Ракетная установка</button>
-<button class="btn btn-outline-info" [disabled]="!this.game.playerShip.equipments.has(Equip.SHIELD)" type="submit" (click)="getInfo(Equip.SHIELD)">Щит</button>
-<div>
-  {{this.id}}
+<button [ngClass]="this.bstyle0" type="submit" (click)="viewTarget()">Цель</button>
+<button [ngClass]="this.bstyle0" type="submit" (click)="viewStat()">Характеристики</button>
+<button [ngClass]="this.bstyle0" type="submit" (click)="viewInventory()">Инвентарь</button>
+<div class="my-3" *ngIf="menu === Menu.STAT">
+ <table>
+   <tr>
+     <td>
+       Броня
+     </td>
+     <td>
+       {{game.playerShip.currentHp.toFixed(1)}} / {{game.playerShip.maxHp}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Щит
+     </td>
+     <td>
+       {{game.playerShip.currentShield.toFixed(1)}} / {{game.playerShip.maxShield}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Восстановление щита
+     </td>
+     <td>
+       {{game.playerShip.maxAccShield.toFixed(1)}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Энергосистема
+     </td>
+     <td>
+       {{game.playerShip.currentEnergy.toFixed(1)}} / {{game.playerShip.maxEnergy}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Восстановление энергии
+     </td>
+     <td>
+       {{game.playerShip.maxAccEnergy.toFixed(1)}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Грузовой отсек
+     </td>
+     <td>
+       {{game.playerShip.currentCargo}} / {{game.playerShip.maxCargo}}
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Топливо
+     </td>
+     <td>
+       {{game.playerShip.currentFuel.toFixed(1)}} / {{game.playerShip.maxFuel}}
+     </td>
+     <td>
+       <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.currentFuel === game.playerShip.maxFuel" type="submit" (click)="addFuel()">Заправить</button>
+     </td>
+   </tr>
+   <tr>
+     <td>
+       Ракеты
+     </td>
+     <td>
+       {{game.playerShip.currentRocket}} / {{game.playerShip.maxRocket}}
+     </td>
+     <td>
+       <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.currentRocket === game.playerShip.maxRocket" type="submit" (click)="addRocket()">Купить</button>
+     </td>
+   </tr>
+ </table>
 </div>
-<div>
-  {{this.name}} Стоимость продажи: {{this.price}}
+
+<div class="my-3" *ngIf="menu === Menu.INVENTORY">
+  <table>
+    <col>
+    <tr>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ARMOR)" type="submit" (click)="getInfo(Equip.ARMOR)">Броня</button>
+      </td>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CAPACITOR)" type="submit" (click)="getInfo(Equip.CAPACITOR)">Энергосистема</button>
+      </td>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.LASERGUN)" type="submit" (click)="getInfo(Equip.LASERGUN)">Лазер</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.SHIELD)" type="submit" (click)="getInfo(Equip.SHIELD)">Щит</button>
+      </td>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CARGOBAY)" type="submit" (click)="getInfo(Equip.CARGOBAY)">Грузовой отсек</button>
+      </td>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ROCKETLAUNCHER)" type="submit" (click)="getInfo(Equip.ROCKETLAUNCHER)">Ракетная установка</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+
+      </td>
+      <td>
+        <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.FUELTANK)" type="submit" (click)="getInfo(Equip.FUELTANK)">Топливный бак</button>
+      </td>
+      <td>
+
+      </td>
+    </tr>
+  </table>
+
+  <div>
+    {{this.id}}
+  </div>
+  <div>
+    {{this.name}} Стоимость продажи: {{this.price}}
+  </div>
+  <div>
+    {{this.info}}
+  </div>
+  <button [ngClass]="this.bstyle0" [disabled]="game.trade !== Trade.SHIP" type="submit" (click)="deleteE()">Снять</button>
+  <button [ngClass]="this.bstyle0" [disabled]="game.trade !== Trade.INVENTORY || equipment.type === Equip.GOODS" type="submit" (click)="setE()">Установить</button>
+  <button [ngClass]="this.bstyle0" [disabled]="game.trade !== Trade.INVENTORY" type="submit" (click)="sell()">Продать</button>
+  <table border="0" align="center" cellpadding="4"  table-layout="fixed">
+    <tr *ngFor="let jj of [].constructor(this.game.playerShip.maxCargo / 4); let j=index">
+      <td>
+      <span *ngFor="let thing of game.inventory; let i=index">
+          <button *ngIf="i % (this.game.playerShip.maxCargo / 4) === j" [ngClass]="this.bstyle2" [disabled]="game.inventory[i] === game.emptyEquipment" type="submit" (click)="getInfoFromInv(i)">{{thing.label}}</button>
+      </span>
+
+      </td>
+    </tr>
+  </table>
 </div>
-<div>
-  {{this.info}}
-</div>
-<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.SHIP" type="submit" (click)="deleteE()">Снять</button>
-<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.INVENTORY || equipment.type === Equip.GOODS" type="submit" (click)="setE()">Установить</button>
-<button [ngClass]="this.myStyle" [disabled]="game.trade !== Trade.INVENTORY" type="submit" (click)="sell()">Продать</button>
-<table border="0" align="center" cellpadding="4"  table-layout="fixed">
-  <tr *ngFor="let jj of [].constructor(this.game.playerShip.maxCargo / 4); let j=index">
-    <td>
-    <span *ngFor="let thing of game.inventory; let i=index">
-        <button *ngIf="i % (this.game.playerShip.maxCargo / 4) === j" [ngClass]="this.myStyle" [disabled]="game.inventory[i] === game.emptyEquipment" type="submit" (click)="getInfoFromInv(i)">{{thing.label}}</button>
+<div *ngIf="game.playerShip.state === State.DOCK">
+  <table border="0" align="center" cellpadding="4"  table-layout="fixed">
+    <tr *ngFor="let jj of [].constructor(8); let j=index">
+      <td>
+    <span *ngFor="let thing of game.market; let i=index">
+        <button *ngIf="i % 8 === j" [ngClass]="this.bstyle2" [disabled]="game.market[i] === game.emptyEquipment" type="submit" (click)="getInfoFromMarket(i)">{{thing.label}}</button>
     </span>
 
-    </td>
-  </tr>
-</table>
-
+      </td>
+    </tr>
+  </table>
+  <button [ngClass]="this.bstyle0" [disabled]="game.trade !== Trade.MARKET" type="submit" (click)="buy()">Купить</button>
+</div>
 

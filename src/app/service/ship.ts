@@ -23,12 +23,30 @@ export class Ship extends Figure {
   private _maxAccEnergy = 0;
   private _currentAccEnergy = this.maxAccEnergy;
   private _maxCargo = 4;
+  private _currentCargo = 0;
   private _maxFuel = 0;
   private _currentFuel = this._maxFuel;
   private _maxAccShield = 0;
   private _currentAccShield = this.maxAccShield;
+  private _maxRocket = 4;
   private _currentRocket = 3;
 
+
+  get maxRocket(): number {
+    return this._maxRocket;
+  }
+
+  set maxRocket(value: number) {
+    this._maxRocket = value;
+  }
+
+  get currentCargo(): number {
+    return this._currentCargo;
+  }
+
+  set currentCargo(value: number) {
+    this._currentCargo = value;
+  }
 
   get currentRocket(): number {
     return this._currentRocket;
@@ -166,6 +184,7 @@ export class Ship extends Figure {
     // энергия
     t = (this.currentEnergy + this.maxAccEnergy > this.maxEnergy) ? this.maxEnergy : this.currentEnergy + this.maxAccEnergy;
     this.currentEnergy = this.currentEnergy > 0 ? t : 0;
+
     this.equipments.forEach(equipment => equipment.logic());
     if (!this.playerShip) {
       if (this.chekpoints.length === 0) {

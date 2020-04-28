@@ -22,7 +22,16 @@ export class Starmap {
   private solars: Solar[] = null;
   private selected = -1;
   private _target = -1;
+  private _hyperjumpDistance = 0;
 
+
+  get hyperjumpDistance(): number {
+    return this._hyperjumpDistance;
+  }
+
+  set hyperjumpDistance(value: number) {
+    this._hyperjumpDistance = value;
+  }
 
   get target(): number {
     return this._target;
@@ -189,12 +198,12 @@ export class Starmap {
     ctx.fillStyle = 'yellow';
     ctx.font = 18 + 'px arial';
     ctx.fillText(this.solars[currentSystem].name, xl, yb);
-    if (this._target !== -1) {
+    if ((this._target !== -1) && (this._target !== currentSystem)) {
       ctx.fillText('-->   ' + this.solars[this._target].name, xl + 100, yb);
       const dx = this.solars[currentSystem].point0.x - this.solars[this._target].point0.x;
       const dy = this.solars[currentSystem].point0.y - this.solars[this._target].point0.y;
-      const r = Math.sqrt(dx * dx + dy * dy) / 10;
-      ctx.fillText(r.toFixed(1).toString(), xl + 300, yb);
+      this._hyperjumpDistance = Math.round(Math.sqrt(dx * dx + dy * dy)) / 10;
+      ctx.fillText(this._hyperjumpDistance.toFixed(1).toString(), xl + 300, yb);
     }
   }
 
