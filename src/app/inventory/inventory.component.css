@@ -2,20 +2,27 @@
   table-layout: fixed;
   width: 100%;
 }
+div {
+  color: antiquewhite;
+}
 .bs0 {
-  width: 150px;
+  width: 175px;
 }
 .bs1 {
-  width: 180px;
+  width: 175px;
 }
 .bs2 {
   width: 50px;
+}
+.bs3 {
+  width: 40px;
 }
 .hh1 {
   color: aqua;
 }
 .hh2 {
-  color: blueviolet;
+  .btn: true;
+  .btn-outline-info: true;
 }
 /*.btn-outline-info{*/
 

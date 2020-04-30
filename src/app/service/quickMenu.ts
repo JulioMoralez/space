@@ -1,6 +1,6 @@
 import {Point} from './point';
 
-export class Menu {
+export class QuickMenu {
 
   private _point0: Point = new Point(0, 0);
   private colors: string[] = ['red', 'green', 'blue', 'yellow'];

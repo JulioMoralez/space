@@ -10,6 +10,7 @@ import {Equip, Equipment} from './equipment/equipment';
 import {Armor} from './equipment/armor';
 import {Cargobay} from './equipment/cargobay';
 import {Fueltank} from './equipment/fueltank';
+import {Engine} from './equipment/engine';
 
 export class Ship extends Figure {
 
@@ -30,7 +31,25 @@ export class Ship extends Figure {
   private _currentAccShield = this.maxAccShield;
   private _maxRocket = 4;
   private _currentRocket = 3;
+  private _maxVolume = 0;
+  private _currentVolume = 0;
 
+
+  get maxVolume(): number {
+    return this._maxVolume;
+  }
+
+  set maxVolume(value: number) {
+    this._maxVolume = value;
+  }
+
+  get currentVolume(): number {
+    return this._currentVolume;
+  }
+
+  set currentVolume(value: number) {
+    this._currentVolume = value;
+  }
 
   get maxRocket(): number {
     return this._maxRocket;
@@ -165,6 +184,7 @@ export class Ship extends Figure {
     this.installEquip(new Shield(1));
     this.installEquip(new Lasergun(1));
     this.installEquip(new Rocketlauncher(1));
+    this.installEquip(new Engine(3));
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {

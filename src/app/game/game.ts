@@ -7,14 +7,18 @@ import {Point} from '../service/point';
 import {Joy} from '../service/joy';
 import {Orb, TypeOrb} from '../service/orb';
 import {Ship} from '../service/ship';
-import {Menu} from '../service/menu';
+import {QuickMenu} from '../service/quickMenu';
 import {Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
 import {Solar} from '../service/solar';
-import {resolveGlobs} from 'tslint/lib/files/resolution';
+import {Goods} from '../service/goods';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
+}
+
+export enum Menu {
+  TARGET, STAT, INVENTORY, MAP, TRADE
 }
 
 @Component({
@@ -54,7 +58,8 @@ export class GameComponent implements OnInit {
   joy = new Joy(new Point(this.maxAreaX - 150, this.maxAreaY - 150),
                 new Point(0, 0),
                 new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
-  menu = new Menu();
+  quickMenu = new QuickMenu();
+  menu = Menu.STAT;
   playerShip: Ship = null;
   public inventory: Equipment[] = [];
   public market: Equipment[] = [];
@@ -63,8 +68,9 @@ export class GameComponent implements OnInit {
   public credits = 100;
   solars: Solar[] = [];
   starmap: Starmap = null;
-  starmapView = false;
-
+  searchName: string;
+  goods: Goods[] = [Goods.FOOD, Goods.TEXTILES, Goods.RADIOACTIVES, Goods.SLAVES];
+  goodsInBay: number[] = new Array(this.goods.length).fill(0);
 
   ngOnInit(): void {
     this.initGameObjects();
@@ -132,7 +138,7 @@ export class GameComponent implements OnInit {
     }
 
     // быстрое меню
-    this.menu.draw(this.ctx, this.point0);
+    this.quickMenu.draw(this.ctx, this.point0);
 
     // интерфейс меню
     this.ctx.beginPath();
@@ -200,8 +206,8 @@ export class GameComponent implements OnInit {
     for (const figure of this.figures) {
       this.drawOnMiniMap(figure);
     }
-    if (this.starmapView) {
-      this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel);
+    if (this.menu === Menu.MAP) {
+      this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel, this.searchName);
     }
   }
 
@@ -229,7 +235,7 @@ export class GameComponent implements OnInit {
 
     this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY);
     this.starmap =
-      new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars);
+      new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars, this.currentSystem);
     this.solars[this.startSystem].figures.forEach(figure => this.figures.push(figure));
 
     this.playerShip = new Ship(new Point(100, 400), this.figures);
@@ -249,8 +255,8 @@ export class GameComponent implements OnInit {
 
   mouseMove($event: MouseEvent) {
     this.joy.use($event.offsetX, $event.offsetY, this.point0);
-    this.menu.use($event.offsetX, $event.offsetY, this.point0);
-    if (this.starmapView) {
+    this.quickMenu.use($event.offsetX, $event.offsetY, this.point0);
+    if (this.menu === Menu.MAP) {
       this.starmap.use($event.offsetX, $event.offsetY);
     }
   }
@@ -261,12 +267,12 @@ export class GameComponent implements OnInit {
     if (this.joy.checkOnArea(x, y)) {
       this.joy.start(x, y, this.point0);
     } else {
-      if (this.starmapView) {
+      if (this.menu === Menu.MAP) {
         this.starmap.start(x, y);
       } else {
         if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
           ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
-          this.menu.start(x, y, this.point0);
+          this.quickMenu.start(x, y, this.point0);
         }
       }
     }
@@ -275,10 +281,10 @@ export class GameComponent implements OnInit {
   mouseUp() {
     this.joy.reset();
     this.starmap.reset();
-    switch (this.menu.reset()) {
+    switch (this.quickMenu.reset()) {
       case 1: { // выбор
         for (const figure of this.figures) {
-          if (figure.checkOnArea(this.menu.point0.x, this.menu.point0.y)) {
+          if (figure.checkOnArea(this.quickMenu.point0.x, this.quickMenu.point0.y)) {
             this.playerShip.target = figure;
             break;
           }
@@ -290,7 +296,7 @@ export class GameComponent implements OnInit {
         break;
       }
       case 3: { // движение
-        this.playerShip.chekpoints.push(new Point(this.menu.point0.x, this.menu.point0.y));
+        this.playerShip.chekpoints.push(new Point(this.quickMenu.point0.x, this.quickMenu.point0.y));
         break;
       }
       case 4: {
@@ -328,14 +334,11 @@ export class GameComponent implements OnInit {
     this.starmap.mouseWheel($event.deltaY);
   }
 
-  starmapSwitch() {
-    this.starmapView = ! this.starmapView;
-  }
-
   hyperjump() {
     if ((this.playerShip.currentFuel >= this.starmap.hyperjumpDistance) &&
       (this.starmap.target !== -1) &&
-      (this.starmap.target !== this.currentSystem)) { // прыжок в другую систему, если хватает топлива
+      (this.starmap.target !== this.currentSystem) &&
+      (this.playerShip.state !== State.DOCK)) { // прыжок в другую систему, если хватает топлива и находимся не на станции
       this.figures.length = 0;  // очищаем текущий  массив объектов
       this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
       this.figures.push(this.playerShip);

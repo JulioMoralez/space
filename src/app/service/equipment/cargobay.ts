@@ -26,7 +26,7 @@ export class Cargobay extends Equipment {
     }
     this.type = Equip.CARGOBAY;
     this.id = i;
-    this.label = 'C' + i;
+    this.label = 'T' + i;
     this.name = 'Грузовой отсек ' + i;
     this.info.push('Дополнительный объём: ' + this.cargo);
   }

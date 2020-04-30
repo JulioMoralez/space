@@ -30,7 +30,7 @@ export class Capacitor extends Equipment{
     }
     this.type = Equip.CAPACITOR;
     this.id = i;
-    this.label = 'E' + i;
+    this.label = 'C' + i;
     this.name = 'Энергосистема ' + i;
     this.info.push('Объём энергии: ' + this.maxEnergy);
     this.info.push('Пополнение: ' + this.accEnergy);

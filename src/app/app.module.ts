@@ -6,7 +6,7 @@ import { HeaderComponent } from './header/header.component';
 import { GameComponent } from './game/game';
 import {RouterModule, Routes} from '@angular/router';
 import { InventoryComponent } from './inventory/inventory.component';
-import { MarketComponent } from './market/market.component';
+import {FormsModule} from '@angular/forms';
 
 const appRoutes: Routes = [
   { path: '', component: GameComponent},
@@ -20,12 +20,12 @@ const appRoutes: Routes = [
     HeaderComponent,
     GameComponent,
     InventoryComponent,
-    MarketComponent,
   ],
-  imports: [
-    BrowserModule,
-    RouterModule.forRoot(appRoutes)
-  ],
+    imports: [
+        BrowserModule,
+        RouterModule.forRoot(appRoutes),
+        FormsModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

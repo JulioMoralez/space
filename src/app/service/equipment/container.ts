@@ -1,6 +1,12 @@
 import {Equip, Equipment} from './equipment';
 
-export class Goods extends Equipment{
+export class Container extends Equipment{
+
+  private _volume = 1;
+
+  get volume(): number {
+    return this._volume;
+  }
 
   constructor(i: number) {
     super();
@@ -9,6 +15,7 @@ export class Goods extends Equipment{
         this.price = 10;
         this.id = i;
         this.label = 'G' + i;
+        this._volume = 10;
         this.name = 'FOOD';
         this.info.push('Описание товара');
         break;
@@ -17,6 +24,7 @@ export class Goods extends Equipment{
         this.price = 20;
         this.id = i;
         this.label = 'G' + i;
+        this._volume = 20;
         this.name = 'COMPUTERS';
         this.info.push('Описание товара');
         break;
@@ -25,11 +33,12 @@ export class Goods extends Equipment{
         this.price = 30;
         this.id = i;
         this.label = 'G' + i;
+        this._volume = 30;
         this.name = 'SLAVES';
         this.info.push('Описание товара');
         break;
       }
     }
-    this.type = Equip.GOODS;
+    this.type = Equip.CONTAINER;
   }
 }

@@ -41,18 +41,19 @@ export class Starmap {
     this._target = value;
   }
 
-  constructor(maxAreaX: number, maxAreaY: number, borderMap: number, solars: Solar[]) {
+  constructor(maxAreaX: number, maxAreaY: number, borderMap: number, solars: Solar[], target: number) {
     this.maxAreaX = maxAreaX;
     this.maxAreaY = maxAreaY;
     this.borderMap = borderMap;
     this.solars = solars;
+    this.target = target;
     for (let i = 0; i <= 361; i++) { // расчитываем значаения заранее. Нужно именно 361, чтобы замкнуть круг, так как рисовать будем с 1
       Starmap.tableCos.push(Math.cos(i * Math.PI / 180));
       Starmap.tableSin.push(Math.sin(i * Math.PI / 180));
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D, currentSystem: number, currentFuel: number) {
+  draw(ctx: CanvasRenderingContext2D, currentSystem: number, currentFuel: number, searchName: string) {
     const xl = this.borderMap - this.borderBlackField;
     const xr = this.maxAreaX + this.borderMap + this.borderBlackField;
     const yt = this.borderMap - this.borderBlackField;
@@ -111,7 +112,16 @@ export class Starmap {
         ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'orange';
-        ctx.fillStyle = solar.color;
+        if ((searchName != null) && (searchName.length > 0) && (solar.name.toLowerCase().indexOf(searchName.trim().toLowerCase()) !== -1)) {
+          if ((searchName.indexOf(' ') !== -1) && (solar.name.toLowerCase() !== searchName.trim().toLowerCase())) {
+            ctx.fillStyle = solar.color;
+          } else {
+            ctx.fillStyle = '#0F0';
+            radius *= 3;
+          }
+        } else {
+          ctx.fillStyle = solar.color;
+        }
         ctx.arc(x, y, radius,  0, 2 * Math.PI);
         ctx.stroke();
         ctx.fill();
@@ -193,17 +203,11 @@ export class Starmap {
         }
       }
     }
-    // название выбранной системы
-    ctx.beginPath();
-    ctx.fillStyle = 'yellow';
-    ctx.font = 18 + 'px arial';
-    ctx.fillText(this.solars[currentSystem].name, xl, yb);
+    // расстояние до выбранной системы
     if ((this._target !== -1) && (this._target !== currentSystem)) {
-      ctx.fillText('-->   ' + this.solars[this._target].name, xl + 100, yb);
       const dx = this.solars[currentSystem].point0.x - this.solars[this._target].point0.x;
       const dy = this.solars[currentSystem].point0.y - this.solars[this._target].point0.y;
       this._hyperjumpDistance = Math.round(Math.sqrt(dx * dx + dy * dy)) / 10;
-      ctx.fillText(this._hyperjumpDistance.toFixed(1).toString(), xl + 300, yb);
     }
   }
 

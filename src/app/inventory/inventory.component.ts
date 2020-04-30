@@ -1,17 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import {GameComponent, Trade} from '../game/game';
-import {Equipment, Equip} from '../service/equipment/equipment';
+import {Component, OnInit} from '@angular/core';
+import {GameComponent, Menu, Trade} from '../game/game';
+import {Equip, Equipment} from '../service/equipment/equipment';
 import {Lasergun} from '../service/equipment/lasergun';
-import {Goods} from '../service/equipment/goods';
+import {Container} from '../service/equipment/container';
 import {Cargobay} from '../service/equipment/cargobay';
 import {State} from '../service/figure';
 import {Armor} from '../service/equipment/armor';
 import {Shield} from '../service/equipment/shield';
+import {element} from 'protractor';
+import {createElementCssSelector} from '@angular/compiler';
 
-
-export enum Menu {
-  TARGET, STAT, INVENTORY
-}
 
 @Component({
   selector: 'app-inventory',
@@ -29,11 +27,12 @@ export class InventoryComponent implements OnInit {
   Trade = Trade;
   State = State;
   Menu = Menu;
-  menu = Menu.STAT;
+  changeStr = 'Снять';
   private index = -1;
   bstyle0 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs0';
   bstyle1 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs1';
   bstyle2 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs2';
+  bstyle3 = 'btn btn-outline-info bs3';
   private oldCargo: number;
 
 
@@ -45,7 +44,7 @@ export class InventoryComponent implements OnInit {
     }
     this.game.inventory[0] = new Lasergun(3);
     this.game.inventory[1] = new Lasergun(2);
-    this.game.inventory[2] = new Goods(2);
+    this.game.inventory[2] = new Container(2);
     this.game.inventory[3] = new Cargobay(1);
     this.game.inventory[4] = new Cargobay(1);
     this.game.inventory[5] = new Cargobay(1);
@@ -64,12 +63,16 @@ export class InventoryComponent implements OnInit {
   }
 
   calcFullCargo(): number{
+    let vol = 0;
+    this.game.inventory.filter(value => value.type === Equip.CONTAINER).forEach(value => vol += (value as Container).volume);
+    this.game.playerShip.maxVolume = vol;
     return this.game.inventory.filter(value => value !== this.game.emptyEquipment).length;
   }
 
   getInfo(i: number) {
     if (this.game.playerShip.equipments.has(i)) {
       this.game.trade = Trade.SHIP;
+      this.changeStr = 'Снять';
       this.equipment = this.game.playerShip.equipments.get(i);
       this.id = this.equipment.id;
       this.name = this.equipment.name;
@@ -82,10 +85,19 @@ export class InventoryComponent implements OnInit {
     this.equipment = this.game.market[i];
     this.index = i;
     this.game.trade = Trade.MARKET;
+    this.name = this.equipment.name;
+    this.price = this.equipment.price;
+    this.info = this.equipment.info;
+  }
 
-    // this.inventory.id = this.equipment.id;
-    // this.inventory.name = this.equipment.name;
-    // this.inventory.info = this.equipment.info;
+  changeE() {
+    console.log(this.game.trade);
+    if (this.game.trade === Trade.SHIP) {
+      this.deleteE();
+    }
+    if (this.game.trade === Trade.INVENTORY) {
+      this.setE();
+    }
   }
 
   deleteE() {
@@ -115,6 +127,7 @@ export class InventoryComponent implements OnInit {
     this.equipment = this.game.inventory[i];
     this.index = i;
     this.game.trade = Trade.INVENTORY;
+    this.changeStr = 'Установить';
     this.id = this.equipment.id;
     this.name = this.equipment.name;
     this.price = this.equipment.price;
@@ -209,19 +222,19 @@ export class InventoryComponent implements OnInit {
     } else {
       console.log('недостаточно кредитов');
     }
-
+    this.game.playerShip.currentCargo = this.calcFullCargo();
   }
 
   viewTarget() {
-    this.menu = Menu.TARGET;
+    this.game.menu = Menu.TARGET;
   }
 
   viewStat() {
-    this.menu = Menu.STAT;
+    this.game.menu = Menu.STAT;
   }
 
   viewInventory() {
-    this.menu = Menu.INVENTORY;
+    this.game.menu = Menu.INVENTORY;
   }
 
 
@@ -243,4 +256,52 @@ export class InventoryComponent implements OnInit {
   }
 
 
+  menuButton1(): string {
+    return 'btn btn-info my-2 my-sm-0 mx-1 bs0';
+  }
+
+  menuButton2(): string {
+    return 'btn btn-outline-info my-2 my-sm-0 mx-1 bs0';
+  }
+
+  viewStarmap() {
+    this.game.menu = Menu.MAP;
+  }
+
+  viewTrade() {
+    this.game.menu = Menu.TRADE;
+  }
+
+  plusGoods(i: number, price: number) {
+    if (this.game.playerShip.currentVolume < this.game.playerShip.maxVolume) {
+      if ((this.game.credits - price) >= 0) {
+        this.game.goodsInBay[i]++;
+        this.game.playerShip.currentVolume++;
+        this.game.credits -= price;
+      } else {
+        console.log('Нет денег');
+      }
+    } else {
+        console.log('Нет места');
+      }
+    }
+
+  minusGoods(i: number, price: number) {
+    if (this.game.goodsInBay[i] > 0) {
+      this.game.goodsInBay[i]--;
+      this.game.playerShip.currentVolume--;
+      this.game.credits += price;
+    }
+  }
+
+  plusplusGoods(i: number, price: number) {
+    const qt = this.game.playerShip.maxVolume - this.game.playerShip.currentVolume;
+    if ((this.game.credits - price * qt) >= 0) {
+      this.game.goodsInBay[i] += qt;
+      this.game.playerShip.currentVolume = this.game.playerShip.maxVolume;
+      this.game.credits -= (price * qt);
+    } else {
+      console.log('Нет денег');
+    }
+  }
 }

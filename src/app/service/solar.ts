@@ -3,6 +3,39 @@ import {UtilService} from './util.service';
 import {Figure} from './figure';
 import {Orb, TypeOrb} from './orb';
 
+export class Economy {
+
+  public static AGRO = new Economy('Сельское хозяйство');
+  public static INDUSTRY = new Economy('Промышленность');
+
+  constructor(name: string) {
+    this._name = name;
+  }
+
+  private _name: string;
+
+  get name(): string {
+    return this._name;
+  }
+}
+
+export class Riches {
+
+  public static POOR = new Riches('Бедная');
+  public static AVERAGE = new Riches('Средняя');
+  public static RICH = new Riches('Богатая');
+
+  constructor(name: string) {
+    this._name = name;
+  }
+
+  private _name: string;
+
+  get name(): string {
+    return this._name;
+  }
+}
+
 export class Solar {
 
   static slog: string[] = [
@@ -37,7 +70,34 @@ export class Solar {
   private _color = 'hsl(100,100%,40%)';
   private _figures: Figure[] = [];
   private numPlanets = 0;
+  private _economy: Economy;
+  private _riches: Riches;
+  private _techLevel = 0;
 
+
+  get economy(): Economy {
+    return this._economy;
+  }
+
+  set economy(value: Economy) {
+    this._economy = value;
+  }
+
+  get riches(): Riches {
+    return this._riches;
+  }
+
+  set riches(value: Riches) {
+    this._riches = value;
+  }
+
+  get techLevel(): number {
+    return this._techLevel;
+  }
+
+  set techLevel(value: number) {
+    this._techLevel = value;
+  }
 
   get figures(): Figure[] {
     return this._figures;
@@ -138,6 +198,23 @@ export class Solar {
     for (let i = 0; i < num; i++) { // создание солнца в системе
       solars[i]._figures.
         push(new Orb(new Point(maxMapX / 2, maxMapY / 2), TypeOrb.SUN, solars[i]._radius * 25, solars[i]._color, 'yellow'));
+    }
+    UtilService.randi = 1;
+    for (let i = 0; i < num; i++) { // тип экономики в системе
+      switch (UtilService.rand(UtilService.randi + i, 1)) {
+        case 0: solars[i]._economy = Economy.AGRO; break;
+        case 1: solars[i]._economy = Economy.INDUSTRY; break;
+      }
+    }
+    for (let i = 0; i < num; i++) { // богатство
+      switch (UtilService.rand(UtilService.randi + i, 2)) {
+        case 0: solars[i]._riches = Riches.POOR; break;
+        case 1: solars[i]._riches = Riches.AVERAGE; break;
+        case 2: solars[i]._riches = Riches.RICH; break;
+      }
+    }
+    for (let i = 0; i < num; i++) { // технический уровень
+      solars[i]._techLevel = UtilService.rand(UtilService.randi + i, 9) + 1;
     }
     UtilService.randi = 1;
     for (let i = 0; i < num; i++) { // число планет в системе

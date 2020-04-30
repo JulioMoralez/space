@@ -17,8 +17,8 @@ export class Figure {
   private _radius = 50;
   private _angle = 0;
   private _currentSpeed = 0;
-  private _maxSpeed = 7;
-  private acc = 0.2;
+  private _maxSpeed = 1;
+  private _accSpeed = 0.1;
   private _rot = 5;
   private PI_180 = Math.PI / 180;
   private _axisF: Point = null; // передняя точка оси
@@ -42,6 +42,15 @@ export class Figure {
   private currentTargetRot = 1;
   private maxTargetRot = 10;
   private _figures: Figure[] = [];
+
+
+  get accSpeed(): number {
+    return this._accSpeed;
+  }
+
+  set accSpeed(value: number) {
+    this._accSpeed = value;
+  }
 
   get maxShield(): number {
     return this._maxShield;
@@ -350,21 +359,21 @@ export class Figure {
           }
           this.povorot(rot);
           if (this.currentSpeed < this._maxSpeed) { // набор скорости
-            this.currentSpeed += this.acc;
+            this.currentSpeed += this._accSpeed;
           }
         }
         if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
           if (h < (this.target._radius * this.followRadius)) { // при приближении к цели ближе указанного
             if (h < this.hToTargetOld) {
               // замедляемся на 2x ускорения (ускорение на 1x выше по коду на этом же цикле), что даёт замедление на 1x
-              this.currentSpeed -= 2 * this.acc;
+              this.currentSpeed -= 2 * this._accSpeed;
             }
           }
           this.hToTargetOld = h;
         }
       } else { // если не осталось целей для передвижения
         if (this.currentSpeed > 0) {  // и имеем скорость, то тормозим
-          this.currentSpeed -= this.acc;
+          this.currentSpeed -= this._accSpeed;
           if (this.currentSpeed < 0)  {
             this.currentSpeed = 0;   // до полной остановки
           }
