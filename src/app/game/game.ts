@@ -1,17 +1,25 @@
-import {Component, ElementRef, HostListener, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {interval, Subscription} from 'rxjs';
 import {UtilService} from '../service/util.service';
 import {Star} from '../service/star';
 import {Figure, State} from '../service/figure';
 import {Point} from '../service/point';
 import {Joy} from '../service/joy';
-import {Orb, TypeOrb} from '../service/orb';
 import {Ship} from '../service/ship';
 import {QuickMenu} from '../service/quickMenu';
-import {Equipment} from '../service/equipment/equipment';
+import {Equip, Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
 import {Solar} from '../service/solar';
 import {Goods} from '../service/goods';
+import {Armor} from '../service/equipment/armor';
+import {Shield} from '../service/equipment/shield';
+import {Capacitor} from '../service/equipment/capacitor';
+import {Cargobay} from '../service/equipment/cargobay';
+import {Fueltank} from '../service/equipment/fueltank';
+import {Lasergun} from '../service/equipment/lasergun';
+import {Rocketlauncher} from '../service/equipment/rocketlauncher';
+import {Engine} from '../service/equipment/engine';
+import {Container} from '../service/equipment/container';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -19,6 +27,11 @@ export enum Trade {
 
 export enum Menu {
   TARGET, STAT, INVENTORY, MAP, TRADE
+}
+
+export class SearchField {
+  name: string;
+  techLevel: string;
 }
 
 @Component({
@@ -41,7 +54,7 @@ export class GameComponent implements OnInit {
   startSystem = 0;
   currentSystem = this.startSystem;
   maxAreaX = 1300;
-  maxAreaY = 800;
+  maxAreaY = 920;
   maxMapX = this.maxAreaX * 2;
   maxMapY = this.maxAreaY * 2;
   borderMap = 50; // толщина границы карты
@@ -59,7 +72,7 @@ export class GameComponent implements OnInit {
                 new Point(0, 0),
                 new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
   quickMenu = new QuickMenu();
-  menu = Menu.STAT;
+  menu = Menu.TARGET;
   playerShip: Ship = null;
   public inventory: Equipment[] = [];
   public market: Equipment[] = [];
@@ -68,7 +81,7 @@ export class GameComponent implements OnInit {
   public credits = 100;
   solars: Solar[] = [];
   starmap: Starmap = null;
-  searchName: string;
+  searchField: SearchField = new SearchField();
   goods: Goods[] = [Goods.FOOD, Goods.TEXTILES, Goods.RADIOACTIVES, Goods.SLAVES];
   goodsInBay: number[] = new Array(this.goods.length).fill(0);
 
@@ -207,7 +220,7 @@ export class GameComponent implements OnInit {
       this.drawOnMiniMap(figure);
     }
     if (this.menu === Menu.MAP) {
-      this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel, this.searchName);
+      this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel, this.searchField);
     }
   }
 
@@ -233,10 +246,14 @@ export class GameComponent implements OnInit {
         new Star(UtilService.getRandomInteger(0, this.maxAreaX), UtilService.getRandomInteger(0, this.maxAreaY), i));
     }
 
-    this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY);
+    this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY, this.goods);
     this.starmap =
       new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars, this.currentSystem);
-    this.solars[this.startSystem].figures.forEach(figure => this.figures.push(figure));
+    this.solars[this.startSystem].figures.forEach(figure => {
+      this.figures.push(figure);
+    });
+    this.createMarket(this.solars[this.currentSystem]);
+
 
     this.playerShip = new Ship(new Point(100, 400), this.figures);
     this.playerShip.playerShip = true;
@@ -292,7 +309,9 @@ export class GameComponent implements OnInit {
         break;
       }
       case 2: { // сброс
-        this.playerShip.resetTarget();
+        if (this.playerShip.state !== State.DOCK) {
+          this.playerShip.resetTarget();
+        }
         break;
       }
       case 3: { // движение
@@ -315,10 +334,12 @@ export class GameComponent implements OnInit {
   }
 
   dock() {
+    this.playerShip.dockingTarget = this.playerShip.target;
     this.playerShip.moveToTarget(State.DOCKING);
   }
 
   undock() {
+    this.playerShip.dockingTarget = null;
     this.playerShip.undock();
   }
 
@@ -339,12 +360,34 @@ export class GameComponent implements OnInit {
       (this.starmap.target !== -1) &&
       (this.starmap.target !== this.currentSystem) &&
       (this.playerShip.state !== State.DOCK)) { // прыжок в другую систему, если хватает топлива и находимся не на станции
-      this.figures.length = 0;  // очищаем текущий  массив объектов
-      this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
-      this.figures.push(this.playerShip);
-      this.currentSystem = this.starmap.target;
-      this.playerShip.currentFuel -= this.starmap.hyperjumpDistance;
+        this.figures.length = 0;  // очищаем текущий  массив объектов
+        this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
+        this.figures.push(this.playerShip);
+        this.currentSystem = this.starmap.target;
+        this.playerShip.currentFuel -= this.starmap.hyperjumpDistance;
+        this.createMarket(this.solars[this.currentSystem]);
     }
   }
 
+  private createMarket(solar: Solar) {
+    this.market.length = 0;
+    for (let i = 0; i < 32; i++) {
+      this.market.push(this.emptyEquipment);
+    }
+    let level = 0;
+    for (let i = 0; i < solar.riches.qtMarket; i++) {
+      level = UtilService.getRandomInteger(0, solar.techLevel);
+      switch (UtilService.getRandomInteger(0, 8)) {
+        case 0: this.market[i] = new Armor(level); break;
+        case 1: this.market[i] = new Capacitor(level); break;
+        case 2: this.market[i] = new Cargobay(level); break;
+        case 3: this.market[i] = new Fueltank(level); break;
+        case 4: this.market[i] = new Lasergun(level); break;
+        case 5: this.market[i] = new Rocketlauncher(level); break;
+        case 6: this.market[i] = new Shield(level); break;
+        case 7: this.market[i] = new Engine(level); break;
+        case 8: this.market[i] = new Container(level); break;
+      }
+    }
+  }
 }

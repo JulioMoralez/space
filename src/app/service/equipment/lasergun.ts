@@ -12,34 +12,32 @@ export class Lasergun extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 1: {
-        this.damage = 1;
-        this.energy = 1;
-        this.speed = 100;
-        this.maxRange = 100;
-        this.price = 10;
-        break;
-      }
-      case 2: {
-        this.damage = 2;
-        this.energy = 1;
-        this.speed = 200;
-        this.maxRange = 100;
-        this.price = 20;
-        break;
-      }
-      case 3: {
-        this.damage = 5;
-        this.energy = 2;
-        this.speed = 100;
-        this.maxRange = 50;
-        this.price = 30;
-        break;
-      }
+      case 0: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = 1;  break; }
+      case 1: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 2: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 3: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 4: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 5: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 6: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 7: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 8: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 9: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                 this.price = i * 10;  break; }
+      case 10: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+                  this.price = i * 10;  break; }
     }
     this.type = Equip.LASERGUN;
     this.id = i;
-    this.label = 'L' + i;
+    this.label = i === 10 ? 'LX' :  'L' + i;
     this.name = 'Лазер ' + i;
     this.info.push('Урон: ' + this._damage);
     this.info.push('Расход энергии: ' + this._energy);

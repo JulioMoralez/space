@@ -4,11 +4,10 @@ import {Equip, Equipment} from '../service/equipment/equipment';
 import {Lasergun} from '../service/equipment/lasergun';
 import {Container} from '../service/equipment/container';
 import {Cargobay} from '../service/equipment/cargobay';
-import {State} from '../service/figure';
+import {Figure, State} from '../service/figure';
 import {Armor} from '../service/equipment/armor';
 import {Shield} from '../service/equipment/shield';
-import {element} from 'protractor';
-import {createElementCssSelector} from '@angular/compiler';
+import {Orb, TypeOrb} from '../service/orb';
 
 
 @Component({
@@ -34,6 +33,7 @@ export class InventoryComponent implements OnInit {
   bstyle2 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs2';
   bstyle3 = 'btn btn-outline-info bs3';
   private oldCargo: number;
+  Orb: any;
 
 
   constructor(public game: GameComponent) { }
@@ -51,15 +51,6 @@ export class InventoryComponent implements OnInit {
     this.game.inventory[6] = new Cargobay(1);
     this.game.inventory[7] = new Cargobay(1);
     this.game.playerShip.currentCargo = this.calcFullCargo();
-
-    for (let i = 0; i < 32; i++) {
-      this.game.market.push(this.game.emptyEquipment);
-    }
-    this.game.market[0] = new Armor(3);
-    this.game.market[1] = new Shield(3);
-    this.game.market[2] = new Armor(3);
-    this.game.market[3] = new Armor(3);
-    this.game.market[4] = new Armor(1);
   }
 
   calcFullCargo(): number{
@@ -237,7 +228,13 @@ export class InventoryComponent implements OnInit {
     this.game.menu = Menu.INVENTORY;
   }
 
-
+  repair() {
+    const cr = Math.ceil((this.game.playerShip.maxHp - this.game.playerShip.currentHp) * 2);
+    if (cr <= this.game.credits) {
+      this.game.credits -= cr;
+      this.game.playerShip.currentHp = this.game.playerShip.maxHp;
+    }
+  }
 
   addFuel() {
     const cr = Math.ceil((this.game.playerShip.maxFuel - this.game.playerShip.currentFuel) * 2);
@@ -303,5 +300,26 @@ export class InventoryComponent implements OnInit {
     } else {
       console.log('Нет денег');
     }
+  }
+
+  minusAllGoods() {
+    this.game.goods.forEach(value => {
+      this.game.credits += (this.getPrice(value.id) * this.game.goodsInBay[value.id]);
+      this.game.goodsInBay[value.id] = 0;
+    });
+    this.game.playerShip.currentVolume = 0;
+  }
+
+  isPlanet(target: Figure): boolean {
+    if (target instanceof Orb) {
+      if ((target as Orb).typeOrb === TypeOrb.PLANET) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getPrice(id: number): number { // стоимость товара на планете
+    return (this.game.playerShip.onDock as Orb).goods[id];
   }
 }

@@ -1,5 +1,7 @@
 import {Figure} from './figure';
 import {Point} from './point';
+import {Goods} from './goods';
+import {Solar} from './solar';
 
 export enum TypeOrb {
   SUN, PLANET, SATELLITE
@@ -7,10 +9,10 @@ export enum TypeOrb {
 
 export class Orb extends Figure{
 
-  private typeOrb: TypeOrb;
+  private _typeOrb: TypeOrb;
   private colorFill = 'yellow';
   private colorBorder = 'red';
-  private parentFigure: Figure = null;
+  private parentFigure: Orb = null;
   private orbitX = 200; // размер эллипса по x
   private orbitY = 100; // размер эллипса по y
   private orbitSpeed = 100; // сеорость движения по орбите. Обратная величина
@@ -18,29 +20,32 @@ export class Orb extends Figure{
   private du = 0; // Текущий угол. Перемещение объекта по эллипсу
   private cosU = 0; //
   private sinU = 0; //
-  private _name = '';
+  private _goods: number[] = [];
 
-
-  get name(): string {
-    return this._name;
+  get goods(): number[] {
+    return this._goods;
   }
 
-  set name(value: string) {
-    this._name = value;
+  get typeOrb(): TypeOrb {
+    return this._typeOrb;
+  }
+
+  set typeOrb(value: TypeOrb) {
+    this._typeOrb = value;
   }
 
 
 
   constructor(point0: Point, typeOrb: TypeOrb, radius: number, colorFill: string, colorBorder: string) {
     super(point0);
-    this.typeOrb = typeOrb;
+    this._typeOrb = typeOrb;
     this.radius = radius;
     this.colorFill = colorFill;
     this.colorBorder = colorBorder;
   }
 
   setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number, du: number) {
-    this.parentFigure = parentFigure;
+    this.parentFigure = (parentFigure as unknown as Orb);
     this.orbitX = orbitX;
     this.orbitY = orbitY;
     this.orbitSpeed = Math.PI / orbitSpeed;
@@ -88,4 +93,12 @@ export class Orb extends Figure{
   // rotEllipseY(x: number, y: number, t: number): number {
   //   return x * Math.sin(t) - y * Math.cos(t);
   // }
+
+  createGoods(solar: Solar, goods: Goods[]) { // считаем стоимость товаров на планете
+    this._goods.length = 0;
+    goods.forEach(value => this._goods.push(value.calcPrice(solar.economy, solar.riches)));
+  }
+
+  logic() { // объект данного типа не может быть уничтожен, не учитываем hp < 0
+  }
 }

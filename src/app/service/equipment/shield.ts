@@ -10,28 +10,21 @@ export class Shield extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 1: {
-        this.maxShield = 1;
-        this.accShield = 0.1;
-        this.price = 10;
-        break;
-      }
-      case 2: {
-        this.maxShield = 2;
-        this.accShield = 0.1;
-        this.price = 20;
-        break;
-      }
-      case 3: {
-        this.maxShield = 10;
-        this.accShield = 0.2;
-        this.price = 30;
-        break;
-      }
+      case 0: { this.maxShield = i + 1; this.accShield = 0.1; this.price = 1;  break; }
+      case 1: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 2: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 3: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 4: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 5: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 6: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 7: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 8: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 9: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 10: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
     }
     this.type = Equip.SHIELD;
     this.id = i;
-    this.label = 'S' + i;
+    this.label = i === 10 ? 'SX' :  'S' + i;
     this.name = 'Щит ' + i;
     this.info.push('Объём щита: ' + this.maxShield);
     this.info.push('Восстановление: ' + this.accShield);

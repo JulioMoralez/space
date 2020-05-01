@@ -11,34 +11,22 @@ export class Container extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 1: {
-        this.price = 10;
-        this.id = i;
-        this.label = 'G' + i;
-        this._volume = 10;
-        this.name = 'FOOD';
-        this.info.push('Описание товара');
-        break;
-      }
-      case 2: {
-        this.price = 20;
-        this.id = i;
-        this.label = 'G' + i;
-        this._volume = 20;
-        this.name = 'COMPUTERS';
-        this.info.push('Описание товара');
-        break;
-      }
-      case 3: {
-        this.price = 30;
-        this.id = i;
-        this.label = 'G' + i;
-        this._volume = 30;
-        this.name = 'SLAVES';
-        this.info.push('Описание товара');
-        break;
-      }
+      case 0: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 1: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 2: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 3: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 4: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 5: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 6: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 7: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 8: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 9: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
+      case 10: {  this._volume = i * 2 + 10; this.price = i * 10; break; }
     }
     this.type = Equip.CONTAINER;
+    this.id = i;
+    this.label = i === 10 ? 'GX' :  'G' + i;
+    this.name = 'Контейнер для товаров';
+    this.info.push('Объём: ' + this.volume);
   }
 }

@@ -9,28 +9,21 @@ export class Engine extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 1: {
-        this.maxSpeed = 3;
-        this.accSpeed = 0.1;
-        this.price = 10;
-        break;
-      }
-      case 2: {
-        this.maxSpeed = 5;
-        this.accSpeed = 0.2;
-        this.price = 20;
-        break;
-      }
-      case 3: {
-        this.maxSpeed = 10;
-        this.accSpeed = 0.3;
-        this.price = 30;
-        break;
-      }
+      case 0: {   this.maxSpeed = i + 2; this.accSpeed = 0.1; this.price = 1;  break; }
+      case 1: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 2: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 3: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 4: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 5: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 6: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 7: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 8: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 9: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
+      case 10: {   this.maxSpeed = i + 2; this.accSpeed = i * 0.1; this.price = i * 10;  break; }
     }
     this.type = Equip.ENGINE;
     this.id = i;
-    this.label = 'E' + i;
+    this.label = i === 10 ? 'EX' :  'E' + i;
     this.name = 'Двигатель ' + i;
     this.info.push('Максимальная скорость: ' + this.maxSpeed);
     this.info.push('Ускорение: ' + this.accSpeed);

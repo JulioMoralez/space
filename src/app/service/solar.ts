@@ -2,6 +2,7 @@ import {Point} from './point';
 import {UtilService} from './util.service';
 import {Figure} from './figure';
 import {Orb, TypeOrb} from './orb';
+import {Goods} from './goods';
 
 export class Economy {
 
@@ -21,18 +22,31 @@ export class Economy {
 
 export class Riches {
 
-  public static POOR = new Riches('Бедная');
-  public static AVERAGE = new Riches('Средняя');
-  public static RICH = new Riches('Богатая');
-
-  constructor(name: string) {
-    this._name = name;
-  }
+  public static POOR = new Riches('Бедная', 0.1, 32);
+  public static AVERAGE = new Riches('Средняя', 0.2, 8);
+  public static RICH = new Riches('Богатая', 0.5, 12);
 
   private _name: string;
+  private _koef: number;
+  private _qtMarket: number;
+
+
+  constructor(name: string, koef: number, qtMarket: number) {
+    this._name = name;
+    this._koef = koef;
+    this._qtMarket = qtMarket;
+  }
 
   get name(): string {
     return this._name;
+  }
+
+  get koef(): number {
+    return this._koef;
+  }
+
+  get qtMarket(): number {
+    return this._qtMarket;
   }
 }
 
@@ -148,12 +162,12 @@ export class Solar {
     this._point0 = value;
   }
 
-  static generate(num: number, maxMapX: number, maxMapY: number, maxStarmapX: number, maxStarmapY: number): Solar[] {
+  static generate(num: number, maxMapX: number, maxMapY: number, maxStarmapX: number, maxStarmapY: number, goods: Goods[]): Solar[] {
     const solars: Solar[] = [];
     let name = '';
     let len = 0;
     let sun: Figure;
-    let planet: Figure;
+    let planet: Orb;
     let r = 0;
     const maxMap = Math.min(maxMapX, maxMapY);
     UtilService.randi = 1;
@@ -235,6 +249,8 @@ export class Solar {
           UtilService.rand(UtilService.randi + i, 400) + 400,
           3,
           UtilService.getRandomInteger(0, 10));
+        planet.name = solars[i].name + ' ' + (j + 1);
+        planet.createGoods(solars[i], goods); // заполняем товарами планеты
         solars[i]._figures.push(planet);
       }
     }

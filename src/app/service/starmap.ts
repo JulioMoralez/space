@@ -1,6 +1,7 @@
 import {Point} from './point';
 import {Solar} from './solar';
 import {element} from 'protractor';
+import {SearchField} from '../game/game';
 
 export class Starmap {
 
@@ -53,7 +54,7 @@ export class Starmap {
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D, currentSystem: number, currentFuel: number, searchName: string) {
+  draw(ctx: CanvasRenderingContext2D, currentSystem: number, currentFuel: number, searchField: SearchField) {
     const xl = this.borderMap - this.borderBlackField;
     const xr = this.maxAreaX + this.borderMap + this.borderBlackField;
     const yt = this.borderMap - this.borderBlackField;
@@ -112,11 +113,18 @@ export class Starmap {
         ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'orange';
-        if ((searchName != null) && (searchName.length > 0) && (solar.name.toLowerCase().indexOf(searchName.trim().toLowerCase()) !== -1)) {
-          if ((searchName.indexOf(' ') !== -1) && (solar.name.toLowerCase() !== searchName.trim().toLowerCase())) {
+        // фильтр по названию и уровню
+        if (((searchField.name != null) && (searchField.name.length > 0) &&
+          (solar.name.toLowerCase().indexOf(searchField.name.trim().toLowerCase()) !== -1)) ||
+            ((searchField.techLevel != null) && (searchField.techLevel.length > 0) &&
+              (solar.techLevel.toString() === searchField.techLevel.trim()))) {
+          if ((searchField.name != null) && (searchField.name.indexOf(' ') !== -1) &&
+            (solar.name.toLowerCase() !== searchField.name.trim().toLowerCase())) {
             ctx.fillStyle = solar.color;
           } else {
             ctx.fillStyle = '#0F0';
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 4;
             radius *= 3;
           }
         } else {

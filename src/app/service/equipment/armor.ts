@@ -8,25 +8,21 @@ export class Armor extends Equipment {
   constructor(i: number) {
     super();
     switch (i) {
-      case 1: {
-        this.maxHp = 1;
-        this.price = 10;
-        break;
-      }
-      case 2: {
-        this.maxHp = 2;
-        this.price = 20;
-        break;
-      }
-      case 3: {
-        this.maxHp = 5;
-        this.price = 30;
-        break;
-      }
+      case 0: {   this.maxHp = i + 1;   this.price = 1;   break; }
+      case 1: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 2: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 3: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 4: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 5: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 6: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 7: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 8: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 9: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 10: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
     }
     this.type = Equip.ARMOR;
     this.id = i;
-    this.label = 'A' + i;
+    this.label = i === 10 ? 'AX' : 'A' + i;
     this.name = 'Броня ' + i;
     this.info.push('Объём брони: ' + this.maxHp);
   }

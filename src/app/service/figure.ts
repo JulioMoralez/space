@@ -1,10 +1,5 @@
 import {Point} from './point';
 import {Line} from './line';
-import {Shield} from './equipment/shield';
-import {Capacitor} from './equipment/capacitor';
-import {Equipment} from './equipment/equipment';
-import {Lasergun} from './equipment/lasergun';
-import {Rocketlauncher} from './equipment/rocketlauncher';
 
 export enum State {
   IDLE, FOLLOW, DOCKING, DOCK, DEAD
@@ -28,7 +23,8 @@ export class Figure {
   private _state: State = State.IDLE;
   private followRadius = 3; // расстояние приближения к цели при следовании в  радиусах цели
   private hToTargetOld = 0; // расстояние до цели при следовании на прошлом цикле
-  private onDock: Figure = null;
+  private _onDock: Figure = null; // объект, к которому пристыкованы
+  private _dockingTarget: Figure = null; // объект, к которому стыкуемся
   private _pointBeforeDock = new Point(0, 0);
   private _scale = 1; // масштаб объекта
   private _maxHp = 4;
@@ -42,7 +38,32 @@ export class Figure {
   private currentTargetRot = 1;
   private maxTargetRot = 10;
   private _figures: Figure[] = [];
+  private _name = '';
 
+
+  get dockingTarget(): Figure {
+    return this._dockingTarget;
+  }
+
+  set dockingTarget(value: Figure) {
+    this._dockingTarget = value;
+  }
+
+  get onDock(): Figure {
+    return this._onDock;
+  }
+
+  set onDock(value: Figure) {
+    this._onDock = value;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  set name(value: string) {
+    this._name = value;
+  }
 
   get accSpeed(): number {
     return this._accSpeed;
@@ -219,7 +240,7 @@ export class Figure {
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
-    if (this.onDock === null) { // если не пpиcтыкoвaны, то рисуем объект
+    if (this._onDock === null) { // если не пpиcтыкoвaны, то рисуем объект
       // рисуем объект из линий
       this._lines.forEach(line => {
         ctx.beginPath();
@@ -275,6 +296,25 @@ export class Figure {
         2 * this.radius * this.currentShield / this.maxShield, 5);
       ctx.stroke();
       ctx.fill();
+    } else {
+      // объект к которому пристыкованы
+      ctx.beginPath();
+      ctx.lineWidth = this.currentTargetWidth;
+      ctx.strokeStyle = '#F00';
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.arc(this._onDock.point0.x  + point0.x, this._onDock.point0.y  + point0.y, this._onDock._radius + 10,
+          Math.PI * i / 2 + this.currentTargetRot,   Math.PI * i / 2  + Math.PI / 4  + this.currentTargetRot);
+        ctx.stroke();
+      }
+      if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)){
+        this.deltaTargetWidth = -this.deltaTargetWidth;
+      }
+      this.currentTargetWidth += this.deltaTargetWidth;
+      this.currentTargetRot += 0.1;
+      if (this.currentTargetRot > 2 * Math.PI) {
+        this.currentTargetRot -= 2 * Math.PI;
+      }
     }
   }
 
@@ -340,7 +380,8 @@ export class Figure {
         if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
           this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
           if (this._state === State.DOCKING) { // стыкуемся
-            this.onDock = this._target;
+            this._onDock = this._dockingTarget;
+            this._dockingTarget = null;
             this._pointBeforeDock.setValue(this._point0);
             this._state = State.DOCK;
           }
@@ -381,7 +422,7 @@ export class Figure {
       }
       this.forward(this.currentSpeed);
     } else {
-      this._point0.setValue(this.onDock._point0); // двигаемся вместе с объектом, к которому пристыкованы
+      this._point0.setValue(this._onDock._point0); // двигаемся вместе с объектом, к которому пристыкованы
     }
   }
 
@@ -414,11 +455,12 @@ export class Figure {
     }
     this._pointBeforeDock.x = 0;
     this._pointBeforeDock.y = 0;
-    this.onDock = null;
+    this._onDock = null;
     this._state = State.IDLE;
   }
 
   resetTarget() {
+    this._dockingTarget = null;
     this._chekpoints.length = 0;
     this._state = State.IDLE;
     this._target = null;
