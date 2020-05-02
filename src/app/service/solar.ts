@@ -8,6 +8,7 @@ export class Economy {
 
   public static AGRO = new Economy('Сельское хозяйство');
   public static INDUSTRY = new Economy('Промышленность');
+  public static NONE = new Economy('');
 
   constructor(name: string) {
     this._name = name;
@@ -22,7 +23,7 @@ export class Economy {
 
 export class Riches {
 
-  public static POOR = new Riches('Бедная', 0.1, 32);
+  public static POOR = new Riches('Бедная', 0.1, 4);
   public static AVERAGE = new Riches('Средняя', 0.2, 8);
   public static RICH = new Riches('Богатая', 0.5, 12);
 

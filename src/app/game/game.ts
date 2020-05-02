@@ -7,7 +7,7 @@ import {Point} from '../service/point';
 import {Joy} from '../service/joy';
 import {Ship} from '../service/ship';
 import {QuickMenu} from '../service/quickMenu';
-import {Equip, Equipment} from '../service/equipment/equipment';
+import {Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
 import {Solar} from '../service/solar';
 import {Goods} from '../service/goods';
@@ -82,7 +82,9 @@ export class GameComponent implements OnInit {
   solars: Solar[] = [];
   starmap: Starmap = null;
   searchField: SearchField = new SearchField();
-  goods: Goods[] = [Goods.FOOD, Goods.TEXTILES, Goods.RADIOACTIVES, Goods.SLAVES];
+  goods: Goods[] = [Goods.FOOD, Goods.TEXTILES, Goods.RADIOACTIVES, Goods.SLAVES, Goods.LIQUOR_WINES, Goods.LUXURIES, Goods.NARCOTICS,
+                    Goods.COMPUTERS, Goods.MACHINERY, Goods.ALLOYS, Goods.FIREARMS, Goods.FURS,
+                    Goods.MINERALS, Goods.GOLD, Goods.PLATINUM, Goods.GEMSTONES, Goods.ALIEN_ITEMS];
   goodsInBay: number[] = new Array(this.goods.length).fill(0);
 
   ngOnInit(): void {
@@ -109,6 +111,9 @@ export class GameComponent implements OnInit {
         figure.logic();
         figure.moveToCheckpoint();
         figure.moveOnEllipse();
+      }
+      if (this.playerShip.hyperjumpEnded === true) {  // ждём окончания анимации гиперперехода и выполняем кго
+        this.hyperjump();
       }
       this.refreshCanvas();
     });
@@ -255,7 +260,7 @@ export class GameComponent implements OnInit {
     this.createMarket(this.solars[this.currentSystem]);
 
 
-    this.playerShip = new Ship(new Point(100, 400), this.figures);
+    this.playerShip = new Ship(4, new Point(100, 400), this.figures);
     this.playerShip.playerShip = true;
     this.figures.push(this.playerShip);
 
@@ -271,54 +276,83 @@ export class GameComponent implements OnInit {
   }
 
   mouseMove($event: MouseEvent) {
-    this.joy.use($event.offsetX, $event.offsetY, this.point0);
-    this.quickMenu.use($event.offsetX, $event.offsetY, this.point0);
-    if (this.menu === Menu.MAP) {
-      this.starmap.use($event.offsetX, $event.offsetY);
+    switch ($event.button) {
+      case 0: {
+        this.joy.use($event.offsetX, $event.offsetY, this.point0);
+        this.quickMenu.use($event.offsetX, $event.offsetY, this.point0);
+        if (this.menu === Menu.MAP) {
+          this.starmap.use($event.offsetX, $event.offsetY);
+        }
+        break;
+      }
+      case 2: {
+        break;
+      }
     }
   }
 
   mouseDown($event: MouseEvent) {
     const x = $event.offsetX;
     const y = $event.offsetY;
-    if (this.joy.checkOnArea(x, y)) {
-      this.joy.start(x, y, this.point0);
-    } else {
-      if (this.menu === Menu.MAP) {
-        this.starmap.start(x, y);
-      } else {
-        if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
-          ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
-          this.quickMenu.start(x, y, this.point0);
+    switch ($event.button) {
+      case 0: {
+        if (this.joy.checkOnArea(x, y)) {
+          this.joy.start(x, y, this.point0);
+        } else {
+          if (this.menu === Menu.MAP) {
+            this.starmap.start(x, y);
+          } else {
+            if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
+              ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
+              this.quickMenu.start(x, y, this.point0);
+            }
+          }
         }
+        break;
+      }
+      case 2: {
+        break;
       }
     }
   }
 
-  mouseUp() {
-    this.joy.reset();
-    this.starmap.reset();
-    switch (this.quickMenu.reset()) {
-      case 1: { // выбор
-        for (const figure of this.figures) {
-          if (figure.checkOnArea(this.quickMenu.point0.x, this.quickMenu.point0.y)) {
-            this.playerShip.target = figure;
+  mouseUp($event: MouseEvent) {
+    const x = $event.offsetX;
+    const y = $event.offsetY;
+    switch ($event.button) {
+      case 0: {
+        this.joy.reset();
+        this.starmap.reset();
+        switch (this.quickMenu.reset()) {
+          case 1: { // выбор
+            for (const figure of this.figures) {
+              if (figure.checkOnArea(this.quickMenu.point0.x, this.quickMenu.point0.y)) {
+                this.playerShip.target = figure;
+                break;
+              }
+            }
+            break;
+          }
+          case 2: { // сброс
+            if (this.playerShip.state !== State.DOCK) {
+              this.playerShip.resetTarget();
+              this.playerShip.hyperjumpCancel();
+            }
+            break;
+          }
+          case 3: { // движение
+            break;
+          }
+          case 4: {
             break;
           }
         }
         break;
       }
-      case 2: { // сброс
-        if (this.playerShip.state !== State.DOCK) {
-          this.playerShip.resetTarget();
+      case 2: {
+        if (this.playerShip.state !== State.JUMP) {
+          this.playerShip.chekpoints.push(new Point(x - this.point0.x, y - this.point0.y));
         }
-        break;
-      }
-      case 3: { // движение
-        this.playerShip.chekpoints.push(new Point(this.quickMenu.point0.x, this.quickMenu.point0.y));
-        break;
-      }
-      case 4: {
         break;
       }
     }
@@ -355,18 +389,23 @@ export class GameComponent implements OnInit {
     this.starmap.mouseWheel($event.deltaY);
   }
 
-  hyperjump() {
+  hyperjumpStartAnim() {
     if ((this.playerShip.currentFuel >= this.starmap.hyperjumpDistance) &&
       (this.starmap.target !== -1) &&
       (this.starmap.target !== this.currentSystem) &&
       (this.playerShip.state !== State.DOCK)) { // прыжок в другую систему, если хватает топлива и находимся не на станции
-        this.figures.length = 0;  // очищаем текущий  массив объектов
-        this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
-        this.figures.push(this.playerShip);
-        this.currentSystem = this.starmap.target;
-        this.playerShip.currentFuel -= this.starmap.hyperjumpDistance;
-        this.createMarket(this.solars[this.currentSystem]);
+        this.playerShip.hyperjumpStartAnim();
+        this.menu = Menu.TARGET;
     }
+  }
+
+  hyperjump() {
+    this.playerShip.hyperjump(this.starmap.hyperjumpDistance, this.point0, this.maxAreaX, this.maxAreaY, this.maxMapX, this.maxMapY);
+    this.figures.length = 0;  // очищаем текущий  массив объектов
+    this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
+    this.figures.push(this.playerShip);
+    this.currentSystem = this.starmap.target;
+    this.createMarket(this.solars[this.currentSystem]);
   }
 
   private createMarket(solar: Solar) {
@@ -389,5 +428,9 @@ export class GameComponent implements OnInit {
         case 8: this.market[i] = new Container(level); break;
       }
     }
+  }
+
+  hyperjumpCancel() {
+    this.playerShip.hyperjumpCancel();
   }
 }

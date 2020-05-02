@@ -2,7 +2,7 @@ import {Point} from './point';
 import {Line} from './line';
 
 export enum State {
-  IDLE, FOLLOW, DOCKING, DOCK, DEAD
+  IDLE, FOLLOW, DOCKING, DOCK, DEAD, JUMP
 }
 
 export class Figure {

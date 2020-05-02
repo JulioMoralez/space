@@ -33,6 +33,9 @@ export class Ship extends Figure {
   private _currentRocket = 3;
   private _maxVolume = 0;
   private _currentVolume = 0;
+  private _hyperjumpEnded = false;
+  private currentJumpRadius = this.radius * 2;
+  private currentJumpWidth = 1;
 
 
   get maxVolume(): number {
@@ -163,20 +166,140 @@ export class Ship extends Figure {
     this._maxAccShield = value;
   }
 
-  constructor(point0: Point, figures: Figure[]) {
+
+  get hyperjumpEnded(): boolean {
+    return this._hyperjumpEnded;
+  }
+
+  constructor(type: number, point0: Point, figures: Figure[]) {
     super(point0);
     this.figures = figures;
-    this.points.push(new Point(point0.x, point0.y - 50));
-    this.points.push(new Point(point0.x + 50, point0.y + 50));
-    this.points.push(new Point(point0.x, point0.y + 50));
-    this.points.push(new Point(point0.x - 50, point0.y + 50));
-    this.setAxis(this.points[0], this.points[2]);
-    const color = 'red';
-    const width = 1;
-    this.lines.push(new Line(0, 1, 'blue', width));
-    this.lines.push(new Line(1, 3, color, width));
-    this.lines.push(new Line(3, 0, 'green', 5));
-    this.lines.push(new Line(0, 2, color, width));
+    switch (type) {
+      case 1: {
+        this.radius = 50;
+        this.points.push(new Point(point0.x, point0.y - 50));
+        this.points.push(new Point(point0.x + 50, point0.y + 50));
+        this.points.push(new Point(point0.x, point0.y + 50));
+        this.points.push(new Point(point0.x - 50, point0.y + 50));
+        this.setAxis(this.points[0], this.points[2]);
+        const color = 'red';
+        const width = 1;
+        this.lines.push(new Line(0, 1, 'blue', width));
+        this.lines.push(new Line(1, 3, color, width));
+        this.lines.push(new Line(3, 0, 'green', 5));
+        this.lines.push(new Line(0, 2, color, width));
+        break;
+      }
+      case 2: { // Cobra MK-3
+        this.scale = 1;
+        this.radius = 50 * this.scale;
+        this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x, point0.y - 20 * this.scale));
+        this.points.push(new Point(point0.x, point0.y));
+        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 20 * this.scale));
+        this.points.push(new Point(point0.x + 50 * this.scale, point0.y + 20 * this.scale));
+        this.points.push(new Point(point0.x + 50 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 40 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 20 * this.scale));
+        this.points.push(new Point(point0.x - 50 * this.scale, point0.y + 20 * this.scale));
+        this.points.push(new Point(point0.x - 50 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 40 * this.scale, point0.y + 30 * this.scale));
+        this.setAxis(this.points[0], this.points[3]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(0, 1, color, width));
+        this.lines.push(new Line(2, 3, color, width));
+        this.lines.push(new Line(2, 4, color, width));
+        this.lines.push(new Line(2, 11, color, width));
+        this.lines.push(new Line(2, 7, color, width));
+        this.lines.push(new Line(2, 8, color, width));
+        this.lines.push(new Line(4, 8, color, width));
+        this.lines.push(new Line(4, 7, color, width));
+        this.lines.push(new Line(4, 5, color, width));
+        this.lines.push(new Line(8, 9, color, width));
+        this.lines.push(new Line(8, 11, color, width));
+        this.lines.push(new Line(9, 10, color, width));
+        this.lines.push(new Line(9, 11, color, width));
+        this.lines.push(new Line(5, 7, color, width));
+        this.lines.push(new Line(5, 6, color, width));
+        this.lines.push(new Line(6, 10, color, width));
+        break;
+      }
+      case 3: { // Adder
+        this.scale = 1;
+        this.radius = 50 * this.scale;
+        this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 10 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 10 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 20 * this.scale));
+        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 20 * this.scale));
+        this.setAxis(this.points[0], this.points[1]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(2, 10, color, width));
+        this.lines.push(new Line(2, 3 , color, width));
+        this.lines.push(new Line(3, 11, color, width));
+        this.lines.push(new Line(4, 5, color, width));
+        this.lines.push(new Line(6, 2, color, width));
+        this.lines.push(new Line(6, 4, color, width));
+        this.lines.push(new Line(6, 8, color, width));
+        this.lines.push(new Line(7, 3, color, width));
+        this.lines.push(new Line(7, 5, color, width));
+        this.lines.push(new Line(7, 9, color, width));
+        this.lines.push(new Line(8, 9, color, width));
+        this.lines.push(new Line(12, 14, color, width));
+        this.lines.push(new Line(14, 15, color, width));
+        this.lines.push(new Line(15, 13, color, width));
+        this.lines.push(new Line(13, 12, color, width));
+        break;
+      }
+      case 4: { // Asp MK-2
+        this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 40 * this.scale));
+        this.points.push(new Point(point0.x + 15 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x - 15 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x + 22 * this.scale, point0.y - 3 * this.scale));
+        this.points.push(new Point(point0.x - 22 * this.scale, point0.y - 3 * this.scale));
+        this.points.push(new Point(point0.x + 40 * this.scale, point0.y + 2 * this.scale));
+        this.points.push(new Point(point0.x - 40 * this.scale, point0.y + 2 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 40 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 40 * this.scale));
+        this.setAxis(this.points[0], this.points[3]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(0, 1, color, width));
+        this.lines.push(new Line(4, 5, color, width));
+        this.lines.push(new Line(4, 8, color, width));
+        this.lines.push(new Line(8, 10, color, width));
+        this.lines.push(new Line(10, 11, color, width));
+        this.lines.push(new Line(11, 9, color, width));
+        this.lines.push(new Line(9, 5, color, width));
+        this.lines.push(new Line(7, 5, color, width));
+        this.lines.push(new Line(7, 9, color, width));
+        this.lines.push(new Line(6, 4, color, width));
+        this.lines.push(new Line(6, 8, color, width));
+        this.lines.push(new Line(2, 3, color, width));
+        this.lines.push(new Line(2, 6, color, width));
+        this.lines.push(new Line(2, 7, color, width));
+        break;
+      }
+
+    }
+
     this.installEquip(new Armor(1));
     this.installEquip(new Capacitor(1));
     this.installEquip(new Cargobay(2));
@@ -184,11 +307,25 @@ export class Ship extends Figure {
     this.installEquip(new Shield(1));
     this.installEquip(new Lasergun(1));
     this.installEquip(new Rocketlauncher(1));
-    this.installEquip(new Engine(3));
+    this.installEquip(new Engine(10));
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
     super.draw(ctx, point0);
+    if (this.state === State.JUMP) { // оисуем анимацию прыжка
+      ctx.beginPath();
+      ctx.lineWidth = this.currentJumpWidth;
+      ctx.strokeStyle = 'black';
+      ctx.arc(this.point0.x  + point0.x, this.point0.y  + point0.y, this.currentJumpRadius,  0, 2 * Math.PI);
+      ctx.stroke();
+      if (this.currentJumpRadius - 0.9 >= 0) {
+        this.currentJumpRadius -= 0.9;
+        this.currentJumpWidth += 2;
+      } else {
+        this.state = State.IDLE;
+        this._hyperjumpEnded = true;
+      }
+    }
   }
 
   installEquip(equipment: Equipment) {
@@ -223,5 +360,66 @@ export class Ship extends Figure {
     if (this.equipments.has(Equip.LASERGUN)) {
       this.equipments.get(Equip.LASERGUN).fireLaser(this);
     }
+  }
+
+  hyperjumpStartAnim() {
+    this.target = null;
+    this.chekpoints.length = 0;
+    this.state = State.JUMP;
+  }
+
+  hyperjumpCancel() {
+    this.state = State.IDLE;
+    this.currentJumpRadius = this.radius * 2;
+    this.currentJumpWidth = 1;
+  }
+
+  hyperjump(hyperjumpDistance: number, point0: Point, maxAreaX: number, maxAreaY: number, maxMapX: number, maxMapY: number) {
+    this._hyperjumpEnded = false;
+    this.currentFuel -= hyperjumpDistance;
+    let newX = 0;
+    let newY = 0;
+    let rot = 0;
+    switch (UtilService.getRandomInteger(0, 3)) {
+      case 0: {
+        newX = 300 - this.point0.x;
+        newY = 300 - this.point0.y;
+        rot = 135;
+        point0.x = 0;
+        point0.y = 0;
+        break;
+      }
+      case 1: {
+        newX = maxMapX - 300 - this.point0.x;
+        newY = 300 - this.point0.y;
+        rot = -135;
+        point0.x = - maxMapX + maxAreaX;
+        point0.y = 0;
+        break;
+      }
+      case 2: {
+        newX = maxMapX - 400 - this.point0.x;
+        newY = maxMapY - 400 - this.point0.y;
+        rot = -45;
+        point0.x = - maxMapX + maxAreaX;
+        point0.y = - maxMapY + maxAreaY;
+        break;
+      }
+      case 3: {
+        newX = 300 - this.point0.x;
+        newY = maxMapY - 300 - this.point0.y;
+        rot = 45;
+        point0.x = 0;
+        point0.y = - maxMapY + maxAreaY;
+        break;
+      }
+    }
+    for (const point of this.points) {
+      point.x += newX;
+      point.y += newY;
+    }
+    this.point0.x += newX;
+    this.point0.y += newY;
+    this.povorot( -this.angle + rot);
   }
 }

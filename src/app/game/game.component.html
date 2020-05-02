@@ -6,8 +6,9 @@
 <table>
   <tr align="left">
     <td>
-      <div class="col">
-        <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black" (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp()"></canvas>
+      <div class="col" oncontextmenu = 'return false'>
+        <canvas #canvas123  id='qwe' width={{maxAreaX}} height={{maxAreaY}} style="background-color: black"
+                (mousemove)="mouseMove($event)" (wheel)="mouseWheel($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" (mouseleave)="mouseUp($event)"></canvas>
       </div>
     </td>
     <td valign="top">

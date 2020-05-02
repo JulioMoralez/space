@@ -36,7 +36,7 @@
     <button class="btn btn-outline-info" [disabled]="!((game.playerShip.currentFuel >= game.starmap.hyperjumpDistance) &&
                                                       (game.starmap.target !== -1) &&
                                                       (game.starmap.target !== game.currentSystem) &&
-                                                      (game.playerShip.state !== State.DOCK))" type="submit" (click)="game.hyperjump()">Гиперпрыжок</button>
+                                                      (game.playerShip.state !== State.DOCK))" type="submit" (click)="game.hyperjumpStartAnim()">Гиперпрыжок</button>
   </div>
 </div>
 
@@ -74,6 +74,7 @@
       <button [ngClass]="this.bstyle0" type="submit" (click)="game.undock()">Вылет</button>
     </div>
   </div>
+  <button *ngIf="game.playerShip.state === State.JUMP" class="btn btn-outline-info" type="submit" (click)="game.hyperjumpCancel()">Отмена прыжка</button>
 </div>
 
 <div class="my-3" *ngIf="game.menu === Menu.TRADE">
@@ -88,14 +89,14 @@
       </tr>
       </thead>
       <tr class="table-info" *ngFor="let good of game.goods; let i=index">
-        <td>{{good.name}}</td>
-        <td>{{getPrice(good.id)}}</td>
-        <td>
+        <td style="padding: 1px 10px">{{good.name}}</td>
+        <td style="padding: 1px 10px">{{getPrice(good.id)}}</td>
+        <td style="padding: 1px">
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="minusGoods(i, getPrice(good.id))">-</button>
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="plusGoods(i, getPrice(good.id))">+</button>
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="plusplusGoods(i, getPrice(good.id))">++</button>
         </td>
-        <td>{{game.goodsInBay[i]}}</td>
+        <td style="padding: 1px 10px">{{game.goodsInBay[i]}}</td>
       </tr>
     </table>
     <div>
