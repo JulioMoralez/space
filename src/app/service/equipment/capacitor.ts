@@ -9,8 +9,8 @@ export class Capacitor extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 0: {   this.maxEnergy = i + 1;   this.accEnergy = 0.01;    this.price = 1;    break; }
-      case 1: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
+      case 0: {   this.maxEnergy = i + 1;   this.accEnergy = 0.05;    this.price = 1;    break; }
+      case 1: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.3;    this.price = i * 10;    break; }
       case 2: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
       case 3: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
       case 4: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }

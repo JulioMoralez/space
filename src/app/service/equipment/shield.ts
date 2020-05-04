@@ -11,7 +11,7 @@ export class Shield extends Equipment{
     super();
     switch (i) {
       case 0: { this.maxShield = i + 1; this.accShield = 0.1; this.price = 1;  break; }
-      case 1: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 1: { this.maxShield = i + 100; this.accShield = i * 0; this.price = i * 10;  break; }
       case 2: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
       case 3: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
       case 4: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }

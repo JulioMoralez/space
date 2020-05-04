@@ -11,6 +11,15 @@ import {Armor} from './equipment/armor';
 import {Cargobay} from './equipment/cargobay';
 import {Fueltank} from './equipment/fueltank';
 import {Engine} from './equipment/engine';
+import {LogicRole} from './logicRole';
+
+export enum Role {
+  PLAYER, PATRUL, BATTLE
+}
+
+export enum Fraction {
+  TRADER, MINER, POLICE, PIRATE
+}
 
 export class Ship extends Figure {
 
@@ -36,7 +45,34 @@ export class Ship extends Figure {
   private _hyperjumpEnded = false;
   private currentJumpRadius = this.radius * 2;
   private currentJumpWidth = 1;
+  private _battleMode = false;
+  private _logicRole: LogicRole;
+  private _fraction: Fraction;
 
+
+  get fraction(): Fraction {
+    return this._fraction;
+  }
+
+  set fraction(value: Fraction) {
+    this._fraction = value;
+  }
+
+  get logicRole(): LogicRole {
+    return this._logicRole;
+  }
+
+  set logicRole(value: LogicRole) {
+    this._logicRole = value;
+  }
+
+  get battleMode(): boolean {
+    return this._battleMode;
+  }
+
+  set battleMode(value: boolean) {
+    this._battleMode = value;
+  }
 
   get maxVolume(): number {
     return this._maxVolume;
@@ -224,6 +260,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(5, 7, color, width));
         this.lines.push(new Line(5, 6, color, width));
         this.lines.push(new Line(6, 10, color, width));
+        this.chooseEquip(1, 1, 4, 1, 1, 1, 1, 5);
         break;
       }
       case 3: { // Adder
@@ -263,6 +300,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(14, 15, color, width));
         this.lines.push(new Line(15, 13, color, width));
         this.lines.push(new Line(13, 12, color, width));
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
       case 4: { // Asp MK-2
@@ -295,19 +333,23 @@ export class Ship extends Figure {
         this.lines.push(new Line(2, 3, color, width));
         this.lines.push(new Line(2, 6, color, width));
         this.lines.push(new Line(2, 7, color, width));
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
 
     }
+  }
 
-    this.installEquip(new Armor(1));
-    this.installEquip(new Capacitor(1));
-    this.installEquip(new Cargobay(2));
-    this.installEquip(new Fueltank(1));
-    this.installEquip(new Shield(1));
-    this.installEquip(new Lasergun(1));
-    this.installEquip(new Rocketlauncher(1));
-    this.installEquip(new Engine(10));
+  chooseEquip(armor: number, capacitor: number, cargobay: number, fueltank: number,
+              lasergun: number, rocketlauncher: number, shield: number, engine: number) {
+    this.installEquip(new Armor(armor));
+    this.installEquip(new Capacitor(capacitor));
+    this.installEquip(new Cargobay(cargobay));
+    this.installEquip(new Fueltank(fueltank));
+    this.installEquip(new Lasergun(lasergun));
+    this.installEquip(new Rocketlauncher(rocketlauncher));
+    this.installEquip(new Shield(shield));
+    this.installEquip(new Engine(engine));
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
@@ -334,20 +376,24 @@ export class Ship extends Figure {
 
   logic() {
     super.logic();
+    this.logicRole.useRole();
+    if ((this._battleMode === true) && (this.target !== null) && (this.target.state !== State.DOCK)) {
+      this.fireLaser();
+    }
     let t = 0;
     // щит
     t = (this.currentShield + this.maxAccShield > this.maxShield) ? this.maxShield : this.currentShield + this.maxAccShield;
-    this.currentShield = this.currentShield > 0 ? t : 0;
+    this.currentShield = t > 0 ? t : 0;
     // энергия
     t = (this.currentEnergy + this.maxAccEnergy > this.maxEnergy) ? this.maxEnergy : this.currentEnergy + this.maxAccEnergy;
-    this.currentEnergy = this.currentEnergy > 0 ? t : 0;
+    this.currentEnergy = t > 0 ? t : 0;
 
     this.equipments.forEach(equipment => equipment.logic());
-    if (!this.playerShip) {
-      if (this.chekpoints.length === 0) {
-        this.chekpoints.push(new Point(UtilService.getRandomInteger(100, 1000), UtilService.getRandomInteger(100, 1000)));
-      }
-    }
+    // if (!this.playerShip) {
+    //   if (this.chekpoints.length === 0) {
+    //     this.chekpoints.push(new Point(UtilService.getRandomInteger(100, 1000), UtilService.getRandomInteger(100, 1000)));
+    //   }
+    // }
   }
 
   fireRocket() {

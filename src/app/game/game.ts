@@ -5,7 +5,7 @@ import {Star} from '../service/star';
 import {Figure, State} from '../service/figure';
 import {Point} from '../service/point';
 import {Joy} from '../service/joy';
-import {Ship} from '../service/ship';
+import {Fraction, Role, Ship} from '../service/ship';
 import {QuickMenu} from '../service/quickMenu';
 import {Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
@@ -20,6 +20,7 @@ import {Lasergun} from '../service/equipment/lasergun';
 import {Rocketlauncher} from '../service/equipment/rocketlauncher';
 import {Engine} from '../service/equipment/engine';
 import {Container} from '../service/equipment/container';
+import {LogicRole} from '../service/logicRole';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -86,6 +87,8 @@ export class GameComponent implements OnInit {
                     Goods.COMPUTERS, Goods.MACHINERY, Goods.ALLOYS, Goods.FIREARMS, Goods.FURS,
                     Goods.MINERALS, Goods.GOLD, Goods.PLATINUM, Goods.GEMSTONES, Goods.ALIEN_ITEMS];
   goodsInBay: number[] = new Array(this.goods.length).fill(0);
+  ship1: Ship = null;
+  ship2: Ship = null;
 
   ngOnInit(): void {
     this.initGameObjects();
@@ -109,7 +112,7 @@ export class GameComponent implements OnInit {
 
       for (const figure of this.figures) {
         figure.logic();
-        figure.moveToCheckpoint();
+        figure.moveToCheckpoint(this.maxMapX, this.maxMapY);
         figure.moveOnEllipse();
       }
       if (this.playerShip.hyperjumpEnded === true) {  // ждём окончания анимации гиперперехода и выполняем кго
@@ -260,11 +263,23 @@ export class GameComponent implements OnInit {
     this.createMarket(this.solars[this.currentSystem]);
 
 
-    this.playerShip = new Ship(4, new Point(100, 400), this.figures);
+    this.playerShip = new Ship(2, new Point(100, 600), this.figures);
     this.playerShip.playerShip = true;
     this.figures.push(this.playerShip);
+    this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
+    this.playerShip.fraction = Fraction.PIRATE;
 
-    // this.figures.push( new Ship(new Point(400, 400), this.figures));
+    this.ship1 = new Ship(3, new Point(800, 400), this.figures);
+    this.figures.push(this.ship1);
+    this.ship1.logicRole = new LogicRole(Role.PATRUL, this.ship1, this.maxMapX, this.maxMapY);
+    this.ship1.fraction = Fraction.MINER;
+    // this.ship1.target = this.playerShip;
+    // this.ship1.moveToTarget(State.FOLLOW);
+    //
+    // const ship2 = new Ship(4, new Point(500, 500), this.figures);
+    // this.figures.push(ship2);
+    // ship2.target = this.playerShip;
+    // ship2.moveToTarget(State.FOLLOW);
   }
 
   forward(speed: number) {
@@ -432,5 +447,13 @@ export class GameComponent implements OnInit {
 
   hyperjumpCancel() {
     this.playerShip.hyperjumpCancel();
+  }
+
+  fireLaser1() {
+    this.playerShip.battleMode = !this.playerShip.battleMode;
+  }
+
+  fireLaser2() {
+    this.ship1.battleMode = !this.ship1.battleMode;
   }
 }

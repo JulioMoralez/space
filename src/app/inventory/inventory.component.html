@@ -69,6 +69,12 @@
         <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(5)">W</button>
         <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(-5)">S</button>
       </div>
+      <div>
+        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireLaser1()">Выстрел 111</button>
+      </div>
+      <div>
+        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireLaser2()">Выстрел 222</button>
+      </div>
     </div>
     <div *ngIf="game.playerShip.state === State.DOCK">
       <button [ngClass]="this.bstyle0" type="submit" (click)="game.undock()">Вылет</button>

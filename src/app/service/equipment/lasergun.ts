@@ -14,7 +14,7 @@ export class Lasergun extends Equipment{
     switch (i) {
       case 0: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
                  this.price = 1;  break; }
-      case 1: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+      case 1: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 10;   this.maxRange = i * 10 + 100;
                  this.price = i * 10;  break; }
       case 2: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
                  this.price = i * 10;  break; }

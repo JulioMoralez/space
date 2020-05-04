@@ -2,7 +2,7 @@ import {Point} from './point';
 import {Line} from './line';
 
 export enum State {
-  IDLE, FOLLOW, DOCKING, DOCK, DEAD, JUMP
+  IDLE, FOLLOW, DOCKING, DOCK, DEAD, JUMP, BORDER
 }
 
 export class Figure {
@@ -21,7 +21,8 @@ export class Figure {
   private _chekpoints: Point[] = []; // контрольные точки маршрута
   private _target: Figure = null; // выбранная цель
   private _state: State = State.IDLE;
-  private followRadius = 3; // расстояние приближения к цели при следовании в  радиусах цели
+  private _oldState: State = State.IDLE;
+  private followRadius = 5; // расстояние приближения к цели при следовании в  радиусах цели
   private hToTargetOld = 0; // расстояние до цели при следовании на прошлом цикле
   private _onDock: Figure = null; // объект, к которому пристыкованы
   private _dockingTarget: Figure = null; // объект, к которому стыкуемся
@@ -40,6 +41,14 @@ export class Figure {
   private _figures: Figure[] = [];
   private _name = '';
 
+
+  get oldState(): State {
+    return this._oldState;
+  }
+
+  set oldState(value: State) {
+    this._oldState = value;
+  }
 
   get dockingTarget(): Figure {
     return this._dockingTarget;
@@ -371,55 +380,87 @@ export class Figure {
     return t >= 0 ? Math.abs(t) : 360 + t;
   }
 
-  moveToCheckpoint() {
+  moveToCheckpoint(maxMapX: number, maxMapY: number) {
     if (this._state !== State.DOCK) { // если не пристыкованы, то двигаемся к цели
+      let rot = 0 ;
       if (this._chekpoints.length > 0) {
-        const h = Math.sqrt((this._chekpoints[0].x - this._point0.x) * (this._chekpoints[0].x - this._point0.x) +
-          (this._chekpoints[0].y - this._point0.y) * (this._chekpoints[0].y - this._point0.y));
-        const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
-        if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
-          this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
-          if (this._state === State.DOCKING) { // стыкуемся
-            this._onDock = this._dockingTarget;
-            this._dockingTarget = null;
-            this._pointBeforeDock.setValue(this._point0);
-            this._state = State.DOCK;
+        if ((this.state !== State.BORDER) && // если достигаем границы карты, то разворачиваемся
+          ((this.point0.x < 0) || (this.point0.x > maxMapX) || (this.point0.y < 0) || (this.point0.y > maxMapY))) {
+          this.oldState = this.state;
+          this.state = State.BORDER;
+          if (this.point0.x < 0) { // в зависимости от границы карты выбираем куда двигаться
+            this._chekpoints.unshift(new Point(200, this.point0.y));
+          }
+          if (this.point0.x > maxMapX) {
+            this._chekpoints.unshift(new Point(maxMapX - 200, this.point0.y));
+          }
+          if (this.point0.y < 0) {
+            this._chekpoints.unshift(new Point(this.point0.x, 200));
+          }
+          if (this.point0.y > maxMapY) {
+            this._chekpoints.unshift(new Point(this.point0.x, maxMapY - 200));
           }
         } else {
-          const dt = this.calcAngle(this._chekpoints[0], this._point0);
-          const d = this.calcAngle(this._axisF, this._axisR);
-          let rot = 0 ;
-          // зная два вектора (ось объекта и вектор к цели) поворачиваем в ближайшую сторону
-          const diffAngle = Math.abs(d - dt);
-          if (diffAngle > 10) { // если разница больше, то поворачиваем
-            if (diffAngle > 180)  { // определяем напраление поворота
-              rot = d < dt ? this._rot : -this._rot;
-            } else {
-              rot = d < dt ? -this._rot : this._rot;
+          const h = Math.sqrt((this._chekpoints[0].x - this._point0.x) * (this._chekpoints[0].x - this._point0.x) +
+            (this._chekpoints[0].y - this._point0.y) * (this._chekpoints[0].y - this._point0.y));
+          const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
+          if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
+            if (this.state === State.BORDER) {  // если завершилы разворот от границы, то продолжаем прошлые действия
+              this.state = this.oldState;
+              console.log('222');
             }
-          }
-          this.povorot(rot);
-          if (this.currentSpeed < this._maxSpeed) { // набор скорости
-            this.currentSpeed += this._accSpeed;
-          }
-        }
-        if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
-          if (h < (this.target._radius * this.followRadius)) { // при приближении к цели ближе указанного
-            if (h < this.hToTargetOld) {
-              // замедляемся на 2x ускорения (ускорение на 1x выше по коду на этом же цикле), что даёт замедление на 1x
-              this.currentSpeed -= 2 * this._accSpeed;
+            this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
+            if (this._state === State.DOCKING) { // стыкуемся
+              this._onDock = this._dockingTarget;
+              this._dockingTarget = null;
+              this._pointBeforeDock.setValue(this._point0);
+              this._state = State.DOCK;
             }
+          } else {
+              const dt = this.calcAngle(this._chekpoints[0], this._point0);
+              const d = this.calcAngle(this._axisF, this._axisR);
+              // зная два вектора (ось объекта и вектор к цели) поворачиваем в ближайшую сторону
+              const diffAngle = Math.abs(d - dt);
+              if (diffAngle > 10) { // если разница больше, то поворачиваем
+                if (diffAngle > 180)  { // определяем напраление поворота
+                  rot = d < dt ? this._rot : -this._rot;
+                } else {
+                  rot = d < dt ? -this._rot : this._rot;
+                }
+              }
+              if (this.currentSpeed < this._maxSpeed) { // набор скорости
+                this.currentSpeed += this._accSpeed;
+              }
+              if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
+                if (h < (this.target._radius * this.followRadius)) { // при приближении к цели ближе указанного
+                  if ((h < this.target._radius * (this.followRadius - 2)) && (this.state !== State.BORDER)) {
+                    this.oldState = this.state;
+                    this.state = State.BORDER;
+                    console.log(d * Math.PI / 180);
+                    this._chekpoints.unshift(new Point(this.point0.x + Math.sin(d * Math.PI / 180) * 200, this.point0.y + Math.cos(d * Math.PI / 180) * 200));
+                  } else {
+                    if (h < this.hToTargetOld) {
+                      // замедляемся на 2x ускорения (ускорение на 1x выше по коду на этом же цикле), что даёт замедление на 1x
+                      this.currentSpeed -= 2 * this._accSpeed;
+                      if (this.currentSpeed < 0) {
+                        this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
+                      }
+                    }
+                  }
+                }
+                this.hToTargetOld = h;
+              }
           }
-          this.hToTargetOld = h;
         }
       } else { // если не осталось целей для передвижения
         if (this.currentSpeed > 0) {  // и имеем скорость, то тормозим
           this.currentSpeed -= this._accSpeed;
-          if (this.currentSpeed < 0)  {
-            this.currentSpeed = 0;   // до полной остановки
-          }
+        }
+        if (this.currentSpeed < 0)  {
+          this.currentSpeed = 0;   // до полной остановки
         }
       }
+      this.povorot(rot);
       this.forward(this.currentSpeed);
     } else {
       this._point0.setValue(this._onDock._point0); // двигаемся вместе с объектом, к которому пристыкованы
@@ -456,6 +497,7 @@ export class Figure {
     this._pointBeforeDock.x = 0;
     this._pointBeforeDock.y = 0;
     this._onDock = null;
+    this.currentShield = this.maxShield;
     this._state = State.IDLE;
   }
 
@@ -475,6 +517,9 @@ export class Figure {
       if (this.target._state === State.DEAD) {
         this.target = null;
       }
+    }
+    if ((this._state === State.FOLLOW) && (this._target === null)) {
+      this.resetTarget();
     }
   }
 

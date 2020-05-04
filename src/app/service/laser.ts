@@ -7,7 +7,7 @@ import {Equip} from './equipment/equipment';
 export class Laser extends Weapon{
   private sin = 0;
   private cos = 0;
-  private length = 100;
+  private length = 50;
   private laserSpeed = 0;
 
   constructor(launcher: Ship) {
@@ -23,6 +23,8 @@ export class Laser extends Weapon{
     const h = Math.sqrt(dx * dx + dy * dy);
     this.cos = dx / h;
     this.sin = dy / h;
+    // this.point0.x += (this.length * this.cos / 2);
+    // this.point0.y += (this.length * this.sin / 2);
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
@@ -41,6 +43,7 @@ export class Laser extends Weapon{
     if (this.target !== null) {
       // лазер летит к цели, ничего не перекрывает его
       if (this.target.checkOnArea(this.point0.x - this.length * this.cos, this.point0.y - this.length * this.sin)) {
+      // if (this.target.checkOnArea(this.point0.x, this.point0.y )) {
         super.targetReach(this.target, this.damage);
       }
     }
