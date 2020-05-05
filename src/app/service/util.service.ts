@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import {Point} from './point';
 
 
 @Injectable({
@@ -19,9 +20,20 @@ export class UtilService {
     return this.randi = Math.abs(Math.ceil(Math.sin(i) * m));
   }
 
-  static ggg() {
-    for (let i = 0; i < 10; i++) {
-      console.log(this.rand(this.randi + i, 10));
+  static getRandomPointOverMap(maxMapX: number, maxMapY: number): Point {
+    switch (UtilService.getRandomInteger(0, 3)) {
+      case 0: {
+        return new Point(-200, UtilService.getRandomInteger(0, maxMapY));
+      }
+      case 1: {
+        return new Point(maxMapX + 200, UtilService.getRandomInteger(0, maxMapY));
+      }
+      case 2: {
+        return new Point(UtilService.getRandomInteger(0, maxMapX), -200);
+      }
+      case 3: {
+        return new Point(UtilService.getRandomInteger(0, maxMapX), maxMapY + 200);
+      }
     }
   }
 }

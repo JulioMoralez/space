@@ -1,6 +1,6 @@
 import {Figure, State} from './figure';
 import {Point} from './point';
-import {Ship} from './ship';
+import {Role, Ship} from './ship';
 
 export class Weapon extends Figure{
   private _launcher: Ship = null;
@@ -63,6 +63,7 @@ export class Weapon extends Figure{
     if (target === null) {
       return;
     }
+    target.toBattleMode(this.launcher); // если цель получила повреждение, то она становится враждебной к тому, кто выстрелил
     let damageHp = target.currentHp; // через локальную переменную, чтобы в анимацию не попадало отрицательных значений
     const damageSh = target.currentShield - damage;
     if (damageSh < 0) {

@@ -14,7 +14,7 @@ import {Engine} from './equipment/engine';
 import {LogicRole} from './logicRole';
 
 export enum Role {
-  PLAYER, PATRUL, BATTLE
+  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE
 }
 
 export enum Fraction {
@@ -300,7 +300,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(14, 15, color, width));
         this.lines.push(new Line(15, 13, color, width));
         this.lines.push(new Line(13, 12, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 6);
         break;
       }
       case 4: { // Asp MK-2
@@ -405,6 +405,12 @@ export class Ship extends Figure {
   fireLaser() {
     if (this.equipments.has(Equip.LASERGUN)) {
       this.equipments.get(Equip.LASERGUN).fireLaser(this);
+    }
+  }
+
+  toBattleMode(launcher: Figure) { // отвечаем атакующему
+    if (this.logicRole.role !== Role.BATTLE) {
+      this.logicRole.newRole(Role.BATTLE, launcher);
     }
   }
 

@@ -42,6 +42,7 @@ export class Figure {
   private _name = '';
 
 
+
   get oldState(): State {
     return this._oldState;
   }
@@ -405,17 +406,19 @@ export class Figure {
             (this._chekpoints[0].y - this._point0.y) * (this._chekpoints[0].y - this._point0.y));
           const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
           if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
-            if (this.state === State.BORDER) {  // если завершилы разворот от границы, то продолжаем прошлые действия
+            if (this.state === State.BORDER) {  // если завершили разворот от границы, то продолжаем прошлые действия
               this.state = this.oldState;
-              console.log('222');
+            } else {
+              if (this._state === State.DOCKING) { // стыкуемся
+                this._onDock = this._dockingTarget;
+                this._dockingTarget = null;
+                this._pointBeforeDock.setValue(this._point0);
+                this._state = State.DOCK;
+                this.currentSpeed = 0;
+              }
             }
             this._chekpoints.shift(); // удаляем текущую точку, если достигли цели и не в режиме следования за целью
-            if (this._state === State.DOCKING) { // стыкуемся
-              this._onDock = this._dockingTarget;
-              this._dockingTarget = null;
-              this._pointBeforeDock.setValue(this._point0);
-              this._state = State.DOCK;
-            }
+
           } else {
               const dt = this.calcAngle(this._chekpoints[0], this._point0);
               const d = this.calcAngle(this._axisF, this._axisR);
@@ -432,11 +435,10 @@ export class Figure {
                 this.currentSpeed += this._accSpeed;
               }
               if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
-                if (h < (this.target._radius * this.followRadius)) { // при приближении к цели ближе указанного
+                if ((this.target !== null ) && (h < (this.target._radius * this.followRadius))) { // при приближении к цели ближе указанного
                   if ((h < this.target._radius * (this.followRadius - 2)) && (this.state !== State.BORDER)) {
                     this.oldState = this.state;
                     this.state = State.BORDER;
-                    console.log(d * Math.PI / 180);
                     this._chekpoints.unshift(new Point(this.point0.x + Math.sin(d * Math.PI / 180) * 200, this.point0.y + Math.cos(d * Math.PI / 180) * 200));
                   } else {
                     if (h < this.hToTargetOld) {
@@ -509,12 +511,12 @@ export class Figure {
   }
 
   logic() {
-    if (this.currentHp <= 0) {
+    if ((this.state === State.DEAD) || (this.oldState === State.DEAD) || (this.currentHp <= 0)) {
       this._state = State.DEAD;
       this.figures.splice(this.figures.indexOf(this), 1);
     }
     if (this.target !== null)  {
-      if (this.target._state === State.DEAD) {
+      if ((this.state === State.DEAD) || (this.oldState === State.DEAD)) {
         this.target = null;
       }
     }
@@ -524,5 +526,8 @@ export class Figure {
   }
 
   targetReach(target: Figure, damage: number) {
+  }
+
+  toBattleMode(launcher: Figure) {
   }
 }
