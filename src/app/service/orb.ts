@@ -1,10 +1,9 @@
 import {Figure} from './figure';
 import {Point} from './point';
-import {Goods} from './goods';
-import {Solar} from './solar';
+import {Line} from './line';
 
 export enum TypeOrb {
-  SUN, PLANET, SATELLITE
+  SUN, PLANET, SATELLITE, STATION, BELT
 }
 
 export class Orb extends Figure{
@@ -20,10 +19,15 @@ export class Orb extends Figure{
   private du = 0; // Текущий угол. Перемещение объекта по эллипсу
   private cosU = 0; //
   private sinU = 0; //
-  private _goods: number[] = [];
+  private _goodsPriceOnPlanet: number[] = [];
 
-  get goods(): number[] {
-    return this._goods;
+
+  get goodsPriceOnPlanet(): number[] {
+    return this._goodsPriceOnPlanet;
+  }
+
+  set goodsPriceOnPlanet(value: number[]) {
+    this._goodsPriceOnPlanet = value;
   }
 
   get typeOrb(): TypeOrb {
@@ -34,14 +38,47 @@ export class Orb extends Figure{
     this._typeOrb = value;
   }
 
-
-
   constructor(point0: Point, typeOrb: TypeOrb, radius: number, colorFill: string, colorBorder: string) {
     super(point0);
     this._typeOrb = typeOrb;
     this.radius = radius;
     this.colorFill = colorFill;
     this.colorBorder = colorBorder;
+    if (typeOrb === TypeOrb.STATION) {
+      this.scale = 2;
+      this.radius = 50 * this.scale;
+      this.points.push(new Point(point0.x, point0.y - 50 * this.scale));
+      this.points.push(new Point(point0.x, point0.y + 50 * this.scale));
+      this.points.push(new Point(point0.x + 50 * this.scale, point0.y));
+      this.points.push(new Point(point0.x - 50 * this.scale, point0.y));
+      this.points.push(new Point(point0.x + 40 * this.scale, point0.y - 40 * this.scale));
+      this.points.push(new Point(point0.x - 40 * this.scale, point0.y - 40 * this.scale));
+      this.points.push(new Point(point0.x + 40 * this.scale, point0.y + 40 * this.scale));
+      this.points.push(new Point(point0.x - 40 * this.scale, point0.y + 40 * this.scale));
+      this.points.push(new Point(point0.x + 15 * this.scale, point0.y - 5 * this.scale));
+      this.points.push(new Point(point0.x + 15 * this.scale, point0.y + 5 * this.scale));
+      this.points.push(new Point(point0.x - 15 * this.scale, point0.y + 5 * this.scale));
+      this.points.push(new Point(point0.x - 15 * this.scale, point0.y - 5 * this.scale));
+      this.setAxis(this.points[0], this.points[1]);
+      const color = 'white';
+      const width = 1;
+      this.lines.push(new Line(0, 2, color, width));
+      this.lines.push(new Line(2, 1, color, width));
+      this.lines.push(new Line(1, 3, color, width));
+      this.lines.push(new Line(3, 0, color, width));
+      this.lines.push(new Line(4, 0, color, width));
+      this.lines.push(new Line(4, 2, color, width));
+      this.lines.push(new Line(6, 2, color, width));
+      this.lines.push(new Line(6, 1, color, width));
+      this.lines.push(new Line(7, 1, color, width));
+      this.lines.push(new Line(7, 3, color, width));
+      this.lines.push(new Line(5, 0, color, width));
+      this.lines.push(new Line(5, 3, color, width));
+      this.lines.push(new Line(8, 9, color, width));
+      this.lines.push(new Line(9, 10, color, width));
+      this.lines.push(new Line(10, 11, color, width));
+      this.lines.push(new Line(11, 8, color, width));
+    }
   }
 
   setParent(parentFigure: Figure, orbitX: number, orbitY: number, orbitSpeed: number, u: number, du: number) {
@@ -56,13 +93,34 @@ export class Orb extends Figure{
   }
 
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
-    ctx.beginPath();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = this.colorBorder;
-    ctx.fillStyle = this.colorFill;
-    ctx.arc(this.point0.x   + point0.x, this.point0.y   + point0.y, this.radius,  0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.fill();
+    if ((this.typeOrb === TypeOrb.SUN) || (this.typeOrb === TypeOrb.PLANET) || (this.typeOrb === TypeOrb.SATELLITE)) {
+      ctx.beginPath();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = this.colorBorder;
+      ctx.fillStyle = this.colorFill;
+      ctx.arc(this.point0.x   + point0.x, this.point0.y   + point0.y, this.radius,  0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fill();
+    }
+    if (this.typeOrb === TypeOrb.STATION) {
+      this.lines.forEach(line => {
+        ctx.beginPath();
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = line.width;
+        ctx.moveTo(this.points[line.p1].x + point0.x, this.points[line.p1].y + point0.y);
+        ctx.lineTo(this.points[line.p2].x + point0.x, this.points[line.p2].y + point0.y);
+        ctx.stroke();
+        this.povorot(0.01);
+      });
+    }
+    if (this.typeOrb === TypeOrb.BELT) {
+      ctx.beginPath();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = this.colorBorder;
+      ctx.arc(this.point0.x   + point0.x, this.point0.y   + point0.y, this.radius,  0, 2 * Math.PI);
+      ctx.stroke();
+    }
+
   }
 
   // moveOnOrbit() {
@@ -93,11 +151,6 @@ export class Orb extends Figure{
   // rotEllipseY(x: number, y: number, t: number): number {
   //   return x * Math.sin(t) - y * Math.cos(t);
   // }
-
-  createGoods(solar: Solar, goods: Goods[]) { // считаем стоимость товаров на планете
-    this._goods.length = 0;
-    goods.forEach(value => this._goods.push(value.calcPrice(solar.economy, solar.riches)));
-  }
 
   logic() { // объект данного типа не может быть уничтожен, не учитываем hp < 0
   }

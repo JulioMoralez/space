@@ -7,11 +7,11 @@ import {UtilService} from './util.service';
 export class Scheduler {
 
   private game: GameComponent;
-  private maxCountPatrul = 4;
+  private maxCountPatrul = 0;
   private currentCountPatrul = 0;
   private maxCountTrader = 0;
   private currentCountTrader = 0;
-  private maxCountPirate = 1;
+  private maxCountPirate = 0;
   private currentCountPirate = 0;
 
 

@@ -5,8 +5,6 @@ import {Lasergun} from '../service/equipment/lasergun';
 import {Container} from '../service/equipment/container';
 import {Cargobay} from '../service/equipment/cargobay';
 import {Figure, State} from '../service/figure';
-import {Armor} from '../service/equipment/armor';
-import {Shield} from '../service/equipment/shield';
 import {Orb, TypeOrb} from '../service/orb';
 
 
@@ -33,7 +31,9 @@ export class InventoryComponent implements OnInit {
   bstyle2 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs2';
   bstyle3 = 'btn btn-outline-info bs3';
   private oldCargo: number;
-  Orb: any;
+  priceArmor = 1;
+  priceFuel = 2;
+  priceRocket = 10;
 
 
   constructor(public game: GameComponent) { }
@@ -82,7 +82,6 @@ export class InventoryComponent implements OnInit {
   }
 
   changeE() {
-    console.log(this.game.trade);
     if (this.game.trade === Trade.SHIP) {
       this.deleteE();
     }
@@ -101,6 +100,9 @@ export class InventoryComponent implements OnInit {
         if (!this.recalcCargo()) {
           this.equipment.install(this.game.playerShip, 1);
           this.game.inventory[i] = this.game.emptyEquipment;
+          this.game.sms('Изменении общего объёма. Недостаточно свободного места', 1);
+        } else {
+          this.game.sms('Предмет "' + this.equipment.name + '" перенесён в грузовой отсек', 0);
         }
         this.equipment = null;
         this.game.trade = Trade.NONE;
@@ -109,7 +111,7 @@ export class InventoryComponent implements OnInit {
       }
     }
     if (success === 0) {
-      console.log('недостаточно места на корабле');
+      this.game.sms('Недостаточно свободного места на корабле', 1);
     }
     this.game.playerShip.currentCargo = this.calcFullCargo();
   }
@@ -128,17 +130,19 @@ export class InventoryComponent implements OnInit {
   setE() {
     let e: Equipment = null;
     this.oldCargo = this.game.playerShip.maxCargo;
-    if (this.game.playerShip.equipments.has(this.equipment.type)) { // заменв оборудования
+    if (this.game.playerShip.equipments.has(this.equipment.type)) { // замена оборудования
       e = this.game.playerShip.equipments.get(this.equipment.type);
       e.install(this.game.playerShip, -1);
     }
     this.equipment.install(this.game.playerShip, 1);
     if (!this.recalcCargo()) {  // проверяем, поместится ли весь груз
       this.equipment.install(this.game.playerShip, -1);
+      this.game.sms('Изменении общего объёма. Недостаточно свободного места', 1);
       if (e !== null) {
         e.install(this.game.playerShip, 1);
       }
     } else {
+      this.game.sms('Предмет "' + this.equipment.name + '" установлен на корабль', 0);
       if (e !== null) {
         this.game.inventory[this.index] = e;
       } else {
@@ -149,7 +153,7 @@ export class InventoryComponent implements OnInit {
     this.game.playerShip.currentCargo = this.calcFullCargo();
   }
 
-  private recalcCargo(): boolean { // false - нет места разместить весь груз
+  recalcCargo(): boolean { // false - нет места разместить весь груз
     if (this.oldCargo < this.game.playerShip.maxCargo) { // грузовой отсек стал больше
       for (let i = 0; i < this.game.playerShip.maxCargo - this.oldCargo; i++) {
         this.game.inventory.push(this.game.emptyEquipment);
@@ -167,7 +171,6 @@ export class InventoryComponent implements OnInit {
         }
         this.game.inventory = newInventory;
       } else {  // иначе не проводим операцию по смене объёма
-        console.log('недостаточно места разместить весь груз');
         return false;
       }
     }
@@ -178,6 +181,7 @@ export class InventoryComponent implements OnInit {
     let success = 0;
     for (let i = 0; i < this.game.market.length ; i++) {
       if (this.game.market[i] === this.game.emptyEquipment) {
+        this.game.sms('Предмет "' + this.equipment.name + '" продан за ' + this.equipment.price.toFixed(1) + ' кредитов', 0);
         this.game.market[i] = this.equipment;
         this.game.credits += this.equipment.price;
         this.game.inventory[this.index] = this.game.emptyEquipment;
@@ -188,7 +192,7 @@ export class InventoryComponent implements OnInit {
       }
     }
     if (success === 0) {
-      console.log('недостаточно места на корабле');
+      this.game.sms('Недостаточно свободного места в магазине', 1);
     }
     this.game.playerShip.currentCargo = this.calcFullCargo();
   }
@@ -198,6 +202,7 @@ export class InventoryComponent implements OnInit {
       let success = 0;
       for (let i = 0; i < this.game.inventory.length ; i++) {
         if (this.game.inventory[i] === this.game.emptyEquipment) {
+          this.game.sms('Предмет "' + this.equipment.name + '" куплен за ' + this.equipment.price + ' кредитов', 0);
           this.game.inventory[i] = this.equipment;
           this.game.credits -= this.equipment.price;
           this.game.market[this.index] = this.game.emptyEquipment;
@@ -208,47 +213,68 @@ export class InventoryComponent implements OnInit {
         }
       }
       if (success === 0) {
-        console.log('недостаточно места на корабле');
+        this.game.sms('Недостаточно свободного места на корабле', 1);
       }
     } else {
-      console.log('недостаточно кредитов');
+      this.game.sms('Недостаточно кредитов', 1);
     }
     this.game.playerShip.currentCargo = this.calcFullCargo();
   }
 
   viewTarget() {
     this.game.menu = Menu.TARGET;
+    this.game.messageWithRepeat = '';
   }
 
   viewStat() {
     this.game.menu = Menu.STAT;
+    this.game.messageWithRepeat = '';
   }
 
   viewInventory() {
     this.game.menu = Menu.INVENTORY;
+    this.game.messageWithRepeat = '';
+  }
+
+  viewStarmap() {
+    this.game.menu = Menu.MAP;
+    this.game.messageWithRepeat = '';
+  }
+
+  viewTrade() {
+    this.game.menu = Menu.TRADE;
+    this.game.messageWithRepeat = '';
   }
 
   repair() {
-    const cr = Math.ceil((this.game.playerShip.maxHp - this.game.playerShip.currentHp) * 2);
+    const cr = Math.ceil((this.game.playerShip.maxHp - this.game.playerShip.currentHp) * this.priceArmor);
     if (cr <= this.game.credits) {
       this.game.credits -= cr;
       this.game.playerShip.currentHp = this.game.playerShip.maxHp;
+      this.game.sms('Броня полностью отремонтирована за ' + this.priceArmor.toFixed(1) + ' кредитов', 0);
+    } else {
+      this.game.sms('Недостаточно кредитов', 1);
     }
   }
 
   addFuel() {
-    const cr = Math.ceil((this.game.playerShip.maxFuel - this.game.playerShip.currentFuel) * 2);
+    const cr = Math.ceil((this.game.playerShip.maxFuel - this.game.playerShip.currentFuel) * this.priceFuel);
     if (cr <= this.game.credits) {
       this.game.credits -= cr;
       this.game.playerShip.currentFuel = this.game.playerShip.maxFuel;
+      this.game.sms('Бак полностью заправлен за ' + this.priceFuel.toFixed(1) + ' кредитов', 0);
+    } else {
+      this.game.sms('Недостаточно кредитов', 1);
     }
   }
 
   addRocket() {
-    const cr = 10;
-    if (cr <= this.game.credits) {
-      this.game.credits -= cr;
+    if (this.priceRocket <= this.game.credits) {
+      this.game.credits -= this.priceRocket;
       this.game.playerShip.currentRocket++;
+      this.game.sms('Ракета куплена за ' + this.priceRocket.toFixed(1) + ' кредитов', 0);
+    } else {
+      this.game.sms('Недостаточно кредитов', 1);
     }
   }
 
@@ -261,65 +287,96 @@ export class InventoryComponent implements OnInit {
     return 'btn btn-outline-info my-2 my-sm-0 mx-1 bs0';
   }
 
-  viewStarmap() {
-    this.game.menu = Menu.MAP;
-  }
-
-  viewTrade() {
-    this.game.menu = Menu.TRADE;
-  }
-
   plusGoods(i: number, price: number) {
     if (this.game.playerShip.currentVolume < this.game.playerShip.maxVolume) {
+      console.log(this.game.goods[i]);
       if ((this.game.credits - price) >= 0) {
-        this.game.goodsInBay[i]++;
+        this.game.playerShip.goodsInBay[i]++;
         this.game.playerShip.currentVolume++;
         this.game.credits -= price;
+        this.game.sms('Товар ' + this.game.goods[i].name.toLowerCase() + ' куплен за ' + price.toFixed(1) + ' кредитов', 0);
       } else {
-        console.log('Нет денег');
+        this.game.sms('Недостаточно кредитов', 1);
       }
     } else {
-        console.log('Нет места');
+      this.game.sms('Нет свободного места', 1);
       }
     }
 
   minusGoods(i: number, price: number) {
-    if (this.game.goodsInBay[i] > 0) {
-      this.game.goodsInBay[i]--;
+    if (this.game.playerShip.goodsInBay[i] > 0) {
+      this.game.playerShip.goodsInBay[i]--;
       this.game.playerShip.currentVolume--;
       this.game.credits += price;
+      this.game.sms('Товар ' + this.game.goods[i].name.toLowerCase() + ' продан за ' + price.toFixed(1) + ' кредитов', 0);
     }
   }
 
   plusplusGoods(i: number, price: number) {
     const qt = this.game.playerShip.maxVolume - this.game.playerShip.currentVolume;
     if ((this.game.credits - price * qt) >= 0) {
-      this.game.goodsInBay[i] += qt;
+      this.game.playerShip.goodsInBay[i] += qt;
       this.game.playerShip.currentVolume = this.game.playerShip.maxVolume;
       this.game.credits -= (price * qt);
+      if (qt !== 0) {
+        this.game.sms(
+          'Товар ' + this.game.goods[i].name.toLowerCase() + ' ' + qt + 'ед. куплен за ' + (price * qt).toFixed(1) + ' кредитов', 0);
+      } else {
+        this.game.sms('Нет свободного места', 1);
+      }
     } else {
-      console.log('Нет денег');
+      this.game.sms('Недостаточно кредитов', 1);
     }
   }
 
   minusAllGoods() {
+    let price = 0;
     this.game.goods.forEach(value => {
-      this.game.credits += (this.getPrice(value.id) * this.game.goodsInBay[value.id]);
-      this.game.goodsInBay[value.id] = 0;
+      price += (this.getPrice(value.id) * this.game.playerShip.goodsInBay[value.id]);
+      this.game.playerShip.goodsInBay[value.id] = 0;
     });
+    this.game.credits += price;
     this.game.playerShip.currentVolume = 0;
+    if (price > 0) {
+      this.game.sms('Продано товаров на сумму ' + price.toFixed(1) + ' кредитов', 0);
+    } else {
+      this.game.sms('Грузовой отсек пуст', 1);
+    }
   }
 
-  isPlanet(target: Figure): boolean {
+  isMayDock(target: Figure): boolean {
     if (target instanceof Orb) {
-      if ((target as Orb).typeOrb === TypeOrb.PLANET) {
+      if (((target as Orb).typeOrb === TypeOrb.PLANET) || ((target as Orb).typeOrb === TypeOrb.STATION)) {
         return true;
       }
     }
     return false;
   }
 
-  getPrice(id: number): number { // стоимость товара на планете
-    return (this.game.playerShip.onDock as Orb).goods[id];
+  isMayMine(target: Figure) {
+    if (target instanceof Orb) {
+      if ((target as Orb).typeOrb === TypeOrb.BELT) {
+        return true;
+      }
+    }
+    return false;
   }
+
+  mineInRadius(): boolean {
+    return this.game.playerShip.mineInRadius();
+  }
+
+  getPrice(id: number): number { // стоимость товара на планете
+    return (this.game.playerShip.onDock as Orb).goodsPriceOnPlanet[id];
+  }
+
+  getNameEquip(equip: Equip): string {
+    if (this.game.playerShip.equipments.has(equip)) {
+      return this.game.playerShip.equipments.get(equip).name;
+    } else {
+      return Equipment.names[equip];
+    }
+  }
+
+
 }

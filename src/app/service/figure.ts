@@ -40,6 +40,8 @@ export class Figure {
   private maxTargetRot = 10;
   private _figures: Figure[] = [];
   private _name = '';
+  private cycleRot = 0;
+  private oldRot = 0;
 
 
 
@@ -390,22 +392,21 @@ export class Figure {
           this.oldState = this.state;
           this.state = State.BORDER;
           if (this.point0.x < 0) { // в зависимости от границы карты выбираем куда двигаться
-            this._chekpoints.unshift(new Point(200, this.point0.y));
+            this._chekpoints.unshift(new Point(300, this.point0.y));
           }
           if (this.point0.x > maxMapX) {
-            this._chekpoints.unshift(new Point(maxMapX - 200, this.point0.y));
+            this._chekpoints.unshift(new Point(maxMapX - 300, this.point0.y));
           }
           if (this.point0.y < 0) {
-            this._chekpoints.unshift(new Point(this.point0.x, 200));
+            this._chekpoints.unshift(new Point(this.point0.x, 300));
           }
           if (this.point0.y > maxMapY) {
-            this._chekpoints.unshift(new Point(this.point0.x, maxMapY - 200));
+            this._chekpoints.unshift(new Point(this.point0.x, maxMapY - 300));
           }
         } else {
           const h = Math.sqrt((this._chekpoints[0].x - this._point0.x) * (this._chekpoints[0].x - this._point0.x) +
             (this._chekpoints[0].y - this._point0.y) * (this._chekpoints[0].y - this._point0.y));
-          const radiusCheckpointOrTarget = (this.target !== null) ? this.target._radius : 50; // размер зоны достижения цели
-          if ((h < radiusCheckpointOrTarget) && (this._state !== State.FOLLOW)) {
+          if ((h < this._radius) && (this._state !== State.FOLLOW)) {
             if (this.state === State.BORDER) {  // если завершили разворот от границы, то продолжаем прошлые действия
               this.state = this.oldState;
             } else {
@@ -435,8 +436,8 @@ export class Figure {
                 this.currentSpeed += this._accSpeed;
               }
               if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
-                if ((this.target !== null ) && (h < (this.target._radius * this.followRadius))) { // при приближении к цели ближе указанного
-                  if ((h < this.target._radius * (this.followRadius - 2)) && (this.state !== State.BORDER)) {
+                if ((this.target !== null ) && (h < (this._radius * this.followRadius))) { // при приближении к цели ближе указанного
+                  if ((h < this._radius * (this.followRadius - 2)) && (this.state !== State.BORDER)) {
                     this.oldState = this.state;
                     this.state = State.BORDER;
                     this._chekpoints.unshift(new Point(this.point0.x + Math.sin(d * Math.PI / 180) * 200, this.point0.y + Math.cos(d * Math.PI / 180) * 200));
@@ -444,9 +445,11 @@ export class Figure {
                     if (h < this.hToTargetOld) {
                       // замедляемся на 2x ускорения (ускорение на 1x выше по коду на этом же цикле), что даёт замедление на 1x
                       this.currentSpeed -= 2 * this._accSpeed;
-                      if (this.currentSpeed < 0) {
-                        this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
-                      }
+                    } else {
+                      this.currentSpeed -= this._accSpeed;
+                    }
+                    if (this.currentSpeed < 0) {
+                      this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
                     }
                   }
                 }
@@ -462,6 +465,18 @@ export class Figure {
           this.currentSpeed = 0;   // до полной остановки
         }
       }
+      if ((this.oldRot === rot) && (rot !== 0)) {
+        this.cycleRot++;
+      } else {
+        this.cycleRot = 0;
+      }
+      if (this.cycleRot > 360 / this.rot) {
+        this.currentSpeed -= 2 * this._accSpeed;
+        if (this.currentSpeed < 0) {
+          this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
+        }
+      }
+      this.oldRot = rot;
       this.povorot(rot);
       this.forward(this.currentSpeed);
     } else {
@@ -489,19 +504,7 @@ export class Figure {
     }
   }
 
-  undock() {
-    this.currentSpeed = this._maxSpeed;
-    this.chekpoints.length = 0;
-    for (const point of this.points) {
-      point.x += (this.point0.x - this.pointBeforeDock.x);
-      point.y += (this.point0.y - this.pointBeforeDock.y);
-    }
-    this._pointBeforeDock.x = 0;
-    this._pointBeforeDock.y = 0;
-    this._onDock = null;
-    this.currentShield = this.maxShield;
-    this._state = State.IDLE;
-  }
+
 
   resetTarget() {
     this._dockingTarget = null;

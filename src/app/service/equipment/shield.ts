@@ -27,7 +27,7 @@ export class Shield extends Equipment{
     this.label = i === 10 ? 'SX' :  'S' + i;
     this.name = 'Щит ' + i;
     this.info.push('Объём щита: ' + this.maxShield);
-    this.info.push('Восстановление: ' + this.accShield);
+    this.info.push('Восстановление: ' + this.accShield.toFixed(1));
   }
 
   install(ship: Ship, effect: number) {

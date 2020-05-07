@@ -251,11 +251,20 @@ export class Solar {
           3,
           UtilService.getRandomInteger(0, 10));
         planet.name = solars[i].name + ' ' + (j + 1);
-        planet.createGoods(solars[i], goods); // заполняем товарами планеты
+        // planet.createGoods(solars[i], goods); // заполняем товарами планеты
         solars[i]._figures.push(planet);
       }
     }
-    // solars.forEach(value => console.log(value.numPlanets));
+    for (let i = 0; i < num; i++) { // добавляем станцию
+      planet = new Orb(UtilService.getRandomPointIntoMap(maxMapX, maxMapY), TypeOrb.STATION, 150, '', '');
+      solars[i]._figures.push(planet);
+    }
+    for (let i = 0; i < num; i++) { // добавляем станцию
+      planet = new Orb(UtilService.getRandomPointIntoMap(maxMapX, maxMapY), TypeOrb.BELT, 150, '', '');
+      solars[i]._figures.push(planet);
+    }
+
+
     console.log(solars);
     return solars;
   }

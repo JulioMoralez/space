@@ -22,6 +22,7 @@ import {Engine} from '../service/equipment/engine';
 import {Container} from '../service/equipment/container';
 import {LogicRole} from '../service/logicRole';
 import {Scheduler} from '../service/scheduler';
+import {Orb, TypeOrb} from '../service/orb';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -87,10 +88,13 @@ export class GameComponent implements OnInit {
   goods: Goods[] = [Goods.FOOD, Goods.TEXTILES, Goods.RADIOACTIVES, Goods.SLAVES, Goods.LIQUOR_WINES, Goods.LUXURIES, Goods.NARCOTICS,
                     Goods.COMPUTERS, Goods.MACHINERY, Goods.ALLOYS, Goods.FIREARMS, Goods.FURS,
                     Goods.MINERALS, Goods.GOLD, Goods.PLATINUM, Goods.GEMSTONES, Goods.ALIEN_ITEMS];
-  goodsInBay: number[] = new Array(this.goods.length).fill(0);
   scheduler: Scheduler = null;
-  ship1: Ship = null;
-  ship2: Ship = null;
+  messageStyle = '';
+  message = '';
+  messageWithRepeat = '';
+  messageRepeatCount = 0;
+  messageSuccess = 'alert alert-success';
+  messageDanger = 'alert alert-danger';
 
   ngOnInit(): void {
     this.initGameObjects();
@@ -120,10 +124,36 @@ export class GameComponent implements OnInit {
       if (this.playerShip.hyperjumpEnded === true) {  // ждём окончания анимации гиперперехода и выполняем его, костыль конечно здесь это
         this.hyperjump();
       }
+      if ((this.playerShip.state === State.DOCK) && ((this.playerShip.onDock as Orb).goodsPriceOnPlanet.length === 0)) {
+        this.createPriceGoods(this.playerShip.onDock as Orb);  // генерируем цены на товары при приземлении
+      }
+      if ((this.playerShip.state !== State.DOCK) && (this.playerShip.message.length > 0) && (this.playerShip.newMessage)) {
+        this.sms(this.playerShip.message, this.playerShip.messageStyle);
+        this.playerShip.newMessage = false;
+      }
       this.scheduler.schedule();
       this.refreshCanvas();
     });
 
+  }
+
+  sms(message: string, style: number) { // функция сообщений с подсчётом повторов
+      if (this.message === message) {
+        this.messageRepeatCount++;
+      } else {
+        this.messageRepeatCount = 0;
+      }
+      this.message = message;
+      if (this.messageRepeatCount > 0) {
+        this.messageWithRepeat = (this.message + ' (' + (this.messageRepeatCount + 1) + ')');
+      } else {
+        this.messageWithRepeat = this.message;
+      }
+      if (style === 0) {
+        this.messageStyle = this.messageSuccess;
+      } else {
+        this.messageStyle = this.messageDanger;
+      }
   }
 
   private refreshCanvas() {
@@ -267,7 +297,7 @@ export class GameComponent implements OnInit {
     this.scheduler = new Scheduler(this);
 
 
-    this.playerShip = new Ship(2, new Point(100, 600), this.figures);
+    this.playerShip = new Ship(1, new Point(100, 600), this.figures);
     this.playerShip.playerShip = true;
     this.figures.push(this.playerShip);
     this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
@@ -395,6 +425,10 @@ export class GameComponent implements OnInit {
     this.playerShip.undock();
   }
 
+  mine() {
+    this.playerShip.doMine();
+  }
+
   fireRocket() {
     this.playerShip.fireRocket();
   }
@@ -426,9 +460,15 @@ export class GameComponent implements OnInit {
     this.createMarket(this.solars[this.currentSystem]);
   }
 
+  createPriceGoods(orb: Orb) { // считаем стоимость товаров на планете
+    orb.goodsPriceOnPlanet.length = 0;
+    this.goods.forEach(value =>
+      orb.goodsPriceOnPlanet.push(value.calcPrice(this.solars[this.currentSystem].economy, this.solars[this.currentSystem].riches)));
+  }
+
   private createMarket(solar: Solar) {
     this.market.length = 0;
-    for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < 24; i++) {
       this.market.push(this.emptyEquipment);
     }
     let level = 0;
@@ -450,13 +490,5 @@ export class GameComponent implements OnInit {
 
   hyperjumpCancel() {
     this.playerShip.hyperjumpCancel();
-  }
-
-  fireLaser1() {
-    this.playerShip.battleMode = !this.playerShip.battleMode;
-  }
-
-  fireLaser2() {
-    this.ship1.battleMode = !this.ship1.battleMode;
   }
 }

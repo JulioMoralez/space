@@ -54,8 +54,11 @@
       <div>
         <button [ngClass]="this.bstyle0" type="submit" (click)="game.followToTarget()">Движение за целью</button>
       </div>
-      <div *ngIf="isPlanet(game.playerShip.target)">
+      <div *ngIf="isMayDock(game.playerShip.target)">
         <button [ngClass]="this.bstyle0" type="submit" (click)="game.dock()">Стыковка</button>
+      </div>
+      <div *ngIf="isMayMine(game.playerShip.target)">
+        <button [ngClass]="this.bstyle0" [disabled]="!mineInRadius()" type="submit" (click)="game.mine()">Копать</button>
       </div>
       <div>
         <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireRocket()">Выстрел 1</button>
@@ -69,12 +72,6 @@
         <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(5)">W</button>
         <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(-5)">S</button>
       </div>
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireLaser1()">Выстрел 111</button>
-      </div>
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireLaser2()">Выстрел 222</button>
-      </div>
     </div>
     <div *ngIf="game.playerShip.state === State.DOCK">
       <button [ngClass]="this.bstyle0" type="submit" (click)="game.undock()">Вылет</button>
@@ -84,25 +81,25 @@
 </div>
 
 <div class="my-3" *ngIf="game.menu === Menu.TRADE">
-  <div *ngIf="game.playerShip.state === State.DOCK">
+<!--  <div *ngIf="game.playerShip.state === State.DOCK">-->
     <table class="table">
       <thead class="bg-info">
       <tr>
         <th>Наименование</th>
-        <th>Цена</th>
-        <th></th>
+        <th *ngIf="game.playerShip.state === State.DOCK">Цена</th>
+        <th *ngIf="game.playerShip.state === State.DOCK"></th>
         <th>В трюме</th>
       </tr>
       </thead>
       <tr class="table-info" *ngFor="let good of game.goods; let i=index">
         <td style="padding: 1px 10px">{{good.name}}</td>
-        <td style="padding: 1px 10px">{{getPrice(good.id)}}</td>
-        <td style="padding: 1px">
+        <td style="padding: 1px 10px" *ngIf="game.playerShip.state === State.DOCK">{{getPrice(good.id)}}</td>
+        <td style="padding: 1px" *ngIf="game.playerShip.state === State.DOCK">
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="minusGoods(i, getPrice(good.id))">-</button>
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="plusGoods(i, getPrice(good.id))">+</button>
           <button [ngClass]="this.bstyle3" style="padding: 0" type="submit" (click)="plusplusGoods(i, getPrice(good.id))">++</button>
         </td>
-        <td style="padding: 1px 10px">{{game.goodsInBay[i]}}</td>
+        <td style="padding: 1px 10px">{{game.playerShip.goodsInBay[i]}}</td>
       </tr>
     </table>
     <div>
@@ -113,14 +110,14 @@
         {{game.playerShip.currentVolume}} / {{game.playerShip.maxVolume}}
       </div>
     </div>
-    <div class="my-3">
+    <div class="my-3" *ngIf="game.playerShip.state === State.DOCK">
       <button [ngClass]="this.bstyle0" type="submit" (click)="minusAllGoods()">Продать весь товар</button>
     </div>
   </div>
-  <div *ngIf="game.playerShip.state !== State.DOCK">
-    Товары
-  </div>
-</div>
+<!--  <div *ngIf="game.message !== ''" [ngClass]="this.game.messageStyle" role="alert">-->
+<!--    {{game.message}}-->
+<!--  </div>-->
+<!--</div>-->
 
 <div class="my-3" *ngIf="game.menu === Menu.STAT">
  <table>
@@ -133,6 +130,7 @@
      </td>
      <td *ngIf="game.playerShip.state === State.DOCK">
        <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.currentHp === game.playerShip.maxHp" type="submit" (click)="repair()">Починить</button>
+       1 ед. = {{priceArmor}} cr.
      </td>
    </tr>
    <tr>
@@ -208,6 +206,7 @@
      </td>
      <td *ngIf="game.playerShip.state === State.DOCK">
        <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.currentFuel === game.playerShip.maxFuel" type="submit" (click)="addFuel()">Заправить</button>
+       1 ед. = {{priceFuel}} cr.
      </td>
    </tr>
    <tr>
@@ -219,16 +218,20 @@
      </td>
      <td *ngIf="game.playerShip.state === State.DOCK">
        <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.currentRocket === game.playerShip.maxRocket" type="submit" (click)="addRocket()">Купить</button>
+       {{priceRocket}} cr.
      </td>
    </tr>
  </table>
+<!--  <div *ngIf="game.message !== ''" [ngClass]="this.game.messageStyle" role="alert">-->
+<!--    {{game.message}}-->
+<!--  </div>-->
 </div>
 
   <div class="my-3" *ngIf="game.menu === Menu.INVENTORY">
     <table>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ARMOR)" type="submit" (click)="getInfo(Equip.ARMOR)">Броня</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ARMOR)" type="submit" (click)="getInfo(Equip.ARMOR)">{{getNameEquip(Equip.ARMOR)}}</button>
         </td>
         <td rowspan="8" width="380" style="position: relative">
           <div class="rounded" style="background-color: #17a2b8;
@@ -251,37 +254,38 @@
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CAPACITOR)" type="submit" (click)="getInfo(Equip.CAPACITOR)">Энергосистема</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CAPACITOR)" type="submit" (click)="getInfo(Equip.CAPACITOR)">{{getNameEquip(Equip.CAPACITOR)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.LASERGUN)" type="submit" (click)="getInfo(Equip.LASERGUN)">Лазер</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.LASERGUN)" type="submit" (click)="getInfo(Equip.LASERGUN)">{{getNameEquip(Equip.LASERGUN)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.SHIELD)" type="submit" (click)="getInfo(Equip.SHIELD)">Щит</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.SHIELD)" type="submit" (click)="getInfo(Equip.SHIELD)">{{getNameEquip(Equip.SHIELD)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ENGINE)" type="submit" (click)="getInfo(Equip.ENGINE)">Двигатель</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ENGINE)" type="submit" (click)="getInfo(Equip.ENGINE)">{{getNameEquip(Equip.ENGINE)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CARGOBAY)" type="submit" (click)="getInfo(Equip.CARGOBAY)">Грузовой отсек</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.CARGOBAY)" type="submit" (click)="getInfo(Equip.CARGOBAY)">{{getNameEquip(Equip.CARGOBAY)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ROCKETLAUNCHER)" type="submit" (click)="getInfo(Equip.ROCKETLAUNCHER)">Ракетная установка</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.ROCKETLAUNCHER)" style="padding: 6px 0 6px 0"
+                  type="submit" (click)="getInfo(Equip.ROCKETLAUNCHER)">{{getNameEquip(Equip.ROCKETLAUNCHER)}}</button>
         </td>
       </tr>
       <tr>
         <td>
-          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.FUELTANK)" type="submit" (click)="getInfo(Equip.FUELTANK)">Топливный бак</button>
+          <button [ngClass]="bstyle1" [disabled]="!this.game.playerShip.equipments.has(Equip.FUELTANK)" type="submit" (click)="getInfo(Equip.FUELTANK)">{{getNameEquip(Equip.FUELTANK)}}</button>
         </td>
       </tr>
 
@@ -320,10 +324,10 @@
                   <div>Магазин</div>
                 </td>
               </tr>
-              <tr *ngFor="let jj of [].constructor(8); let j=index">
+              <tr *ngFor="let jj of [].constructor(6); let j=index">
                 <td>
                 <span *ngFor="let thing of game.market; let i=index">
-                    <button *ngIf="i % 8 === j" [ngClass]="this.bstyle2" [disabled]="game.market[i] === game.emptyEquipment" type="submit" (click)="getInfoFromMarket(i)">{{thing.label}}</button>
+                    <button *ngIf="i % 6 === j" [ngClass]="this.bstyle2" [disabled]="game.market[i] === game.emptyEquipment" type="submit" (click)="getInfoFromMarket(i)">{{thing.label}}</button>
                 </span>
                 </td>
               </tr>
@@ -332,8 +336,9 @@
         </td>
       </tr>
     </table>
-
 </div>
-
+<div *ngIf="game.messageWithRepeat !== ''" [ngClass]="this.game.messageStyle" role="alert">
+  {{game.messageWithRepeat}}
+</div>
 
 

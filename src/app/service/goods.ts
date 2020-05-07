@@ -1,4 +1,4 @@
-import {Economy, Riches} from './solar';
+import {Economy, Riches, Solar} from './solar';
 import {UtilService} from './util.service';
 
 export class Goods {
@@ -65,8 +65,10 @@ export class Goods {
         price += (riches.koef * this.price);
       }
     } else {
-      price += (UtilService.getRandomInteger(-20, 20) / 100 * this.price);
+      // случайное отклонение до 20% для товаров не принадлежащих определенной экономике
+      price += (UtilService.getRandomInteger(-20, 20) / 100 * this.price); // возможно убрать надо будет
     }
+    price += (UtilService.getRandomInteger(-10, 10) / 100 * this.price); // случайное отклонение до 10% для всех
     return Math.ceil(price * 10) / 10;
   }
 }
