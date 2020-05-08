@@ -1,4 +1,4 @@
-import {Ship} from '../ship';
+import {Ship} from '../figure/ship';
 
 export enum Equip {
   ARMOR, CAPACITOR, CARGOBAY, FUELTANK, LASERGUN, ROCKETLAUNCHER, SHIELD, ENGINE, CONTAINER

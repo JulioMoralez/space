@@ -1,8 +1,8 @@
 import {Weapon} from './weapon';
 import {Figure, State} from './figure';
-import {Point} from './point';
+import {Point} from '../point';
 import {Ship} from './ship';
-import {Equip} from './equipment/equipment';
+import {Equip} from '../equipment/equipment';
 
 export class Laser extends Weapon{
   private sin = 0;

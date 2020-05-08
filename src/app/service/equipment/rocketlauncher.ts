@@ -1,6 +1,6 @@
 import {Equip, Equipment} from './equipment';
-import {Ship} from '../ship';
-import {Rocket} from '../rocket';
+import {Ship} from '../figure/ship';
+import {Rocket} from '../figure/rocket';
 
 export class Rocketlauncher extends Equipment{
 

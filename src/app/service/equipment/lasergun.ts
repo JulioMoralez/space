@@ -1,6 +1,6 @@
 import {Equip, Equipment} from './equipment';
-import {Ship} from '../ship';
-import {Laser} from '../laser';
+import {Ship} from '../figure/ship';
+import {Laser} from '../figure/laser';
 
 export class Lasergun extends Equipment{
 
@@ -16,7 +16,7 @@ export class Lasergun extends Equipment{
                  this.price = 1;  break; }
       case 1: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 10;   this.maxRange = i * 10 + 100;
                  this.price = i * 10;  break; }
-      case 2: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
+      case 2: {  this.damage = i + 5;    this.energy = 1 / 0.5 + 1;    this.speed = i * 10 + 10;   this.maxRange = i * 10 + 100;
                  this.price = i * 10;  break; }
       case 3: {  this.damage = i + 1;    this.energy = i / 0.5 + 1;    this.speed = i * 10 + 100;   this.maxRange = i * 10 + 100;
                  this.price = i * 10;  break; }

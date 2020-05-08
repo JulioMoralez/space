@@ -20,6 +20,9 @@
     <td>
       <button [ngClass]="game.menu === Menu.TRADE ? menuButton1() : menuButton2()" type="submit" (click)="viewTrade()">Торговля</button>
     </td>
+    <td>
+      <button [ngClass]="game.menu === Menu.HELP ? menuButton1() : menuButton2()" type="submit" (click)="viewHelp()">Справка</button>
+    </td>
   </tr>
 </table>
 
@@ -59,6 +62,9 @@
       </div>
       <div *ngIf="isMayMine(game.playerShip.target)">
         <button [ngClass]="this.bstyle0" [disabled]="!mineInRadius()" type="submit" (click)="game.mine()">Копать</button>
+      </div>
+      <div *ngIf="isMayTake(game.playerShip.target)">
+        <button [ngClass]="this.bstyle0" [disabled]="!contInRadius()" type="submit" (click)="game.take()">Подобрать</button>
       </div>
       <div>
         <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireRocket()">Выстрел 1</button>
@@ -336,6 +342,13 @@
         </td>
       </tr>
     </table>
+</div>
+<div class="my-3" *ngIf="game.menu === Menu.HELP">
+  <div *ngIf="game.helpTarget !== null">
+    Название: <strong>{{game.helpTarget.name}}</strong>
+    <br>
+    {{game.helpTarget.info}}
+  </div>
 </div>
 <div *ngIf="game.messageWithRepeat !== ''" [ngClass]="this.game.messageStyle" role="alert">
   {{game.messageWithRepeat}}

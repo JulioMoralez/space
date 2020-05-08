@@ -1,5 +1,5 @@
 import {Equip, Equipment} from './equipment';
-import {Ship} from '../ship';
+import {Ship} from '../figure/ship';
 
 export class Armor extends Equipment {
 

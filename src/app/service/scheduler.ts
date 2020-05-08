@@ -1,5 +1,5 @@
 import {GameComponent} from '../game/game';
-import {Fraction, Role, Ship} from './ship';
+import {Fraction, Role, Ship} from './figure/ship';
 import {Point} from './point';
 import {LogicRole} from './logicRole';
 import {UtilService} from './util.service';

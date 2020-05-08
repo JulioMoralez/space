@@ -4,8 +4,9 @@ import {Equip, Equipment} from '../service/equipment/equipment';
 import {Lasergun} from '../service/equipment/lasergun';
 import {Container} from '../service/equipment/container';
 import {Cargobay} from '../service/equipment/cargobay';
-import {Figure, State} from '../service/figure';
-import {Orb, TypeOrb} from '../service/orb';
+import {Figure, State} from '../service/figure/figure';
+import {Orb, TypeOrb} from '../service/figure/orb';
+import {Cont} from '../service/figure/cont';
 
 
 @Component({
@@ -236,6 +237,11 @@ export class InventoryComponent implements OnInit {
     this.game.messageWithRepeat = '';
   }
 
+  viewHelp() {
+    this.game.menu = Menu.HELP;
+    this.game.messageWithRepeat = '';
+  }
+
   viewStarmap() {
     this.game.menu = Menu.MAP;
     this.game.messageWithRepeat = '';
@@ -353,7 +359,7 @@ export class InventoryComponent implements OnInit {
     return false;
   }
 
-  isMayMine(target: Figure) {
+  isMayMine(target: Figure): boolean {
     if (target instanceof Orb) {
       if ((target as Orb).typeOrb === TypeOrb.BELT) {
         return true;
@@ -378,5 +384,11 @@ export class InventoryComponent implements OnInit {
     }
   }
 
+  isMayTake(target: Figure): boolean {
+    return (target instanceof Cont);
+  }
 
+  contInRadius(): boolean {
+    return this.game.playerShip.contInRadius(this.game.playerShip.takeRadius);
+  }
 }

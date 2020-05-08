@@ -1,5 +1,5 @@
 import {Figure, State} from './figure';
-import {Point} from './point';
+import {Point} from '../point';
 import {Role, Ship} from './ship';
 
 export class Weapon extends Figure{

@@ -1,7 +1,7 @@
 import {Point} from './point';
 import {UtilService} from './util.service';
-import {Figure} from './figure';
-import {Orb, TypeOrb} from './orb';
+import {Figure} from './figure/figure';
+import {Orb, TypeOrb} from './figure/orb';
 import {Goods} from './goods';
 
 export class Economy {

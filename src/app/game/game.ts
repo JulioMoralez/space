@@ -2,10 +2,10 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {interval, Subscription} from 'rxjs';
 import {UtilService} from '../service/util.service';
 import {Star} from '../service/star';
-import {Figure, State} from '../service/figure';
+import {Figure, State} from '../service/figure/figure';
 import {Point} from '../service/point';
 import {Joy} from '../service/joy';
-import {Fraction, Role, Ship} from '../service/ship';
+import {Fraction, Role, Ship} from '../service/figure/ship';
 import {QuickMenu} from '../service/quickMenu';
 import {Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
@@ -22,14 +22,14 @@ import {Engine} from '../service/equipment/engine';
 import {Container} from '../service/equipment/container';
 import {LogicRole} from '../service/logicRole';
 import {Scheduler} from '../service/scheduler';
-import {Orb, TypeOrb} from '../service/orb';
+import {Orb, TypeOrb} from '../service/figure/orb';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
 }
 
 export enum Menu {
-  TARGET, STAT, INVENTORY, MAP, TRADE
+  TARGET, STAT, INVENTORY, MAP, TRADE, HELP
 }
 
 export class SearchField {
@@ -71,6 +71,10 @@ export class GameComponent implements OnInit {
   visibleAreaOnMinimapY = this.maxAreaY * this.minimapXY / this.maxMapY;
   point0 = new Point(0, 0); // глобальная точка отсчёта карты
   figures: Figure[] = [];
+  helpFigures: Figure[] = [];
+  helpPoint0 = new Point(100, 100);
+  helpTarget: Figure = null;
+  helpFigureStep = 130;
   joy = new Joy(new Point(this.maxAreaX - 150, this.maxAreaY - 150),
                 new Point(0, 0),
                 new Point(this.maxMapX - this.maxAreaX, this.maxMapY - this.maxAreaY));
@@ -260,7 +264,24 @@ export class GameComponent implements OnInit {
     for (const figure of this.figures) {
       this.drawOnMiniMap(figure);
     }
-    if (this.menu === Menu.MAP) {
+    if (this.menu === Menu.HELP) { // рисуем справку
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = 'orange';
+      this.ctx.fillStyle = '#111';
+      this.ctx.fillRect(this.helpPoint0.x + this.helpFigureStep, this.helpPoint0.y,
+        this.helpFigureStep * this.helpFigures.length + (this.helpFigureStep / 2), 170);
+      this.ctx.stroke();
+      for (const figure of this.helpFigures) {
+        figure.draw(this.ctx, this.helpPoint0);
+        if (figure === this.helpTarget) {
+          this.ctx.beginPath();
+          this.ctx.strokeStyle = 'orange';
+          this.ctx.arc(figure.point0.x + this.helpPoint0.x, figure.point0.y + this.helpPoint0.y, figure.radius * 1.3,  0, 2 * Math.PI);
+          this.ctx.stroke();
+        }
+      }
+    }
+    if (this.menu === Menu.MAP) { // рисуем карту галактики
       this.starmap.draw(this.ctx, this.currentSystem, this.playerShip.currentFuel, this.searchField);
     }
   }
@@ -303,10 +324,17 @@ export class GameComponent implements OnInit {
     this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
     this.playerShip.fraction = Fraction.TRADER;
 
-    // this.ship1 = new Ship(3, new Point(800, 300), this.figures);
-    // this.figures.push(this.ship1);
-    // this.ship1.logicRole = new LogicRole(Role.PATRUL, this.ship1, this.maxMapX, this.maxMapY);
-    // this.ship1.fraction = Fraction.MINER;
+    for (let i = 1; i <= 7; i++) {
+      const ship = new Ship(i, new Point(i * this.helpFigureStep + this.helpPoint0.x,  this.helpPoint0.y), null);
+      ship.logicRole = new LogicRole(Role.NONE, ship, this.maxMapX, this.maxMapY);
+      this.helpFigures.push(ship);
+    }
+
+    // const ship1 = new Ship(3, new Point(800, 300), this.figures);
+    // this.figures.push(ship1);
+    // ship1.logicRole = new LogicRole(Role.NONE, ship1, this.maxMapX, this.maxMapY);
+    // ship1.fraction = Fraction.MINER;
+
     //
     // this.ship2 = new Ship(3, new Point(800, 400), this.figures);
     // this.figures.push(this.ship2);
@@ -379,6 +407,16 @@ export class GameComponent implements OnInit {
                 break;
               }
             }
+            if (this.menu === Menu.HELP) {
+              for (const figure of this.helpFigures) { // выделяем корабль в режиме справки
+             if (UtilService.inRadius(figure.point0, new Point(
+                  this.quickMenu.point0.x - this.borderMap - figure.radius + this.point0.x,
+                  this.quickMenu.point0.y - this.borderMap - figure.radius + this.point0.y), figure.radius * 1.3)) {
+                  this.helpTarget = figure;
+                  break;
+                }
+              }
+            }
             break;
           }
           case 2: { // сброс
@@ -428,6 +466,11 @@ export class GameComponent implements OnInit {
   mine() {
     this.playerShip.doMine();
   }
+
+  take() {
+    this.playerShip.doTake();
+  }
+
 
   fireRocket() {
     this.playerShip.fireRocket();

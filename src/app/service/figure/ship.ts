@@ -1,22 +1,22 @@
 import {Figure, State} from './figure';
-import {UtilService} from './util.service';
-import {Point} from './point';
-import {Line} from './line';
-import {Shield} from './equipment/shield';
-import {Capacitor} from './equipment/capacitor';
-import {Lasergun} from './equipment/lasergun';
-import {Rocketlauncher} from './equipment/rocketlauncher';
-import {Equip, Equipment} from './equipment/equipment';
-import {Armor} from './equipment/armor';
-import {Cargobay} from './equipment/cargobay';
-import {Fueltank} from './equipment/fueltank';
-import {Engine} from './equipment/engine';
-import {LogicRole} from './logicRole';
-import {Goods} from './goods';
-import {InventoryComponent} from '../inventory/inventory.component';
+import {UtilService} from '../util.service';
+import {Point} from '../point';
+import {Line} from '../line';
+import {Shield} from '../equipment/shield';
+import {Capacitor} from '../equipment/capacitor';
+import {Lasergun} from '../equipment/lasergun';
+import {Rocketlauncher} from '../equipment/rocketlauncher';
+import {Equip, Equipment} from '../equipment/equipment';
+import {Armor} from '../equipment/armor';
+import {Cargobay} from '../equipment/cargobay';
+import {Fueltank} from '../equipment/fueltank';
+import {Engine} from '../equipment/engine';
+import {LogicRole} from '../logicRole';
+import {Goods} from '../goods';
+import {Cont} from './cont';
 
 export enum Role {
-  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE
+  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE, NONE
 }
 
 export enum Fraction {
@@ -40,8 +40,8 @@ export class Ship extends Figure {
   private _currentFuel = this._maxFuel;
   private _maxAccShield = 0;
   private _currentAccShield = this.maxAccShield;
-  private _maxRocket = 4;
-  private _currentRocket = 3;
+  private _maxRocket = 1;
+  private _currentRocket = 1;
   private _maxVolume = 0;
   private _currentVolume = 0;
   private _hyperjumpEnded = false;
@@ -58,7 +58,14 @@ export class Ship extends Figure {
   private _message = '';
   private _messageStyle = 0;
   private _newMessage = false;
+  private take = false;
+  private takeTarget: Figure = null;
+  private _takeRadius = this.radius * 7;
 
+
+  get takeRadius(): number {
+    return this._takeRadius;
+  }
 
   get newMessage(): boolean {
     return this._newMessage;
@@ -253,7 +260,13 @@ export class Ship extends Figure {
     super(point0);
     this.figures = figures;
     switch (type) {
-      case 1: { // Cobra MK-3
+      case 1: {
+        this.name = 'Cobra MK-3';
+        this.info = 'Корабль оснащен генераторами кормового и носового защитных полей. ' +
+          'Боевые надстройки позволяют размещать до четырех пусковых установок ракет. ' +
+          'Наиболее популярен среди независимых торговцев, желающих совместить боевую мощь с приличной грузоподъемностью.';
+        this.maxRocket = 4;
+        this.currentRocket = 3;
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
@@ -287,10 +300,14 @@ export class Ship extends Figure {
         this.lines.push(new Line(5, 7, color, width));
         this.lines.push(new Line(5, 6, color, width));
         this.lines.push(new Line(6, 10, color, width));
-        this.chooseEquip(1, 1, 4, 1, 1, 1, 1, 5);
+        this.chooseEquip(1, 1, 4, 1, 2, 1, 1, 5);
         break;
       }
-      case 2: { // Adder
+      case 2: {
+        this.name = 'Adder';
+        this.info = 'Корабль разработан и выпускается компанией, работающей без лицензии. ' +
+          'Местоположение ее штаб-квартиры неизвестно. ' +
+          'Используется в основном контрабандистами. Вооружение слабое — несет только одну пусковую ракетную установку.';
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
@@ -330,7 +347,15 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 6);
         break;
       }
-      case 3: { // Asp MK-2
+      case 3: {
+        this.name = 'Asp MK-2';
+        this.info = 'Основная боевая единица Галактического Флота. ' +
+          'Корабль разработан и изготавливается на государственных заводах. ' +
+          'Имеет уникальную систему камуфлирования под окружающую обстановку. ' +
+          'Предназначен для проведения разведывательных операций и сопровождения караванов. ' +
+          'Прекрасная маневренность, высокая скорость, мощный лазер ' +
+          'делают его желанным (но и труднодоступным) объектом для захвата пиратами. ' +
+          'Большие габариты позволяют нести мощные установки генерации силовых полей.';
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
@@ -365,7 +390,11 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 4: { // Krait
+      case 4: {
+        this.name = 'Krait';
+        this.info = 'Небольшой, надежный одноместный истребитель. ' +
+          'В последние годы был вытеснен более совершенными кораблями, но в отдаленных секторах космоса он все еще встречается. ' +
+          'Запасные части давно не выпускаются и пилоты нередко добывают их посредством пиратства.';
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 25 * this.scale));
@@ -396,15 +425,20 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 5: { // Python
+      case 5: {
+        this.name = 'Python';
+        this.info = 'Один из самых крупных торговых кораблей. ' +
+          'Малая скорость и плохая маневренность компенсируется мощнейшими установками защитных полей и мощным лазером. ' +
+          'Редко подвергается атакам пиратских кораблей и широко используется ' +
+          'свободными предпринимателями в качестве временного склада в челночных операциях и как промежуточная база отдыха.';
         this.scale = 1;
         this.radius = 50 * this.scale;
-        this.points.push(new Point(point0.x, point0.y - 60 * this.scale));
-        this.points.push(new Point(point0.x, point0.y + 40 * this.scale));
-        this.points.push(new Point(point0.x + 25 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x - 25 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x + 15 * this.scale, point0.y + 40 * this.scale));
-        this.points.push(new Point(point0.x - 15 * this.scale, point0.y + 40 * this.scale));
+        this.points.push(new Point(point0.x, point0.y - 65 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 60 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 18 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 18 * this.scale));
+        this.points.push(new Point(point0.x + 15 * this.scale, point0.y + 60 * this.scale));
+        this.points.push(new Point(point0.x - 15 * this.scale, point0.y + 60 * this.scale));
         this.points.push(new Point(point0.x, point0.y - 5 * this.scale));
         this.setAxis(this.points[0], this.points[1]);
         const color = 'white';
@@ -423,7 +457,13 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 6: { // Viper
+      case 6: {
+        this.name = 'Viper';
+        this.info = 'Малый, надежный, высокоманевренный истребитель-перехватчик. ' +
+          'Изготовлен по заказу полицейских сил для патрулирования. ' +
+          'Используется также и Вооруженными Силами в операциях по сопровождению караванов. ' +
+          'Истребитель одноместный, но, при необходимости, в нем кратковременно можно разместить до 10 пассажиров. ' +
+          'Грузового отсека не имеет.';
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 35 * this.scale));
@@ -445,7 +485,12 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 7: { // Fer-de-Lance
+      case 7: {
+        this.name = 'Fer-de-Lance';
+        this.info = 'Корабль наиболее широко используется состоятельными охотниками за призами и независимыми компаниями в деловых операциях. ' +
+          'Изысканный корабль, пригодный как для деловых вояжей бизнесменов, так и для боевого применения и для комфортабельного отдыха. ' +
+          'В ущерб грузоподъемности оснащен наиболее совершенным навигационным оборудованием, системами защиты и нападения. ' +
+          'Внутренняя отделка выполнена из самых дорогих материалов. Корабль полностью автономен.';
         this.scale = 1;
         this.radius = 50 * this.scale;
         this.points.push(new Point(point0.x, point0.y - 60 * this.scale));
@@ -522,6 +567,16 @@ export class Ship extends Figure {
       ctx.stroke();
       ctx.fill();
     }
+    if (this.take) { // если притягиваем контейнер к себеша
+      if (this.takeTarget !== null) {
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#0F0';
+        ctx.moveTo(this.point0.x + point0.x, this.point0.y + point0.y);
+        ctx.lineTo(this.takeTarget.point0.x + point0.x, this.takeTarget.point0.y + point0.y);
+        ctx.stroke();
+      }
+    }
 
   }
 
@@ -531,6 +586,9 @@ export class Ship extends Figure {
 
   logic() {
     super.logic();
+    if (this.state === State.DEAD) { // в случае своей гибели оставляем контейнер
+      this.createCont();
+    }
     this.logicRole.useRole();
     if ((this._battleMode === true) && (this.target !== null) && (this.target.state !== State.DOCK)) {
       this.fireLaser();
@@ -543,7 +601,7 @@ export class Ship extends Figure {
     t = (this.currentEnergy + this.maxAccEnergy > this.maxEnergy) ? this.maxEnergy : this.currentEnergy + this.maxAccEnergy;
     this.currentEnergy = t > 0 ? t : 0;
     if (this.mine) {
-      if (this.mineInRadius()) {
+      if ((this.mineInRadius()) && (this.battleMode === false))  {
         this.currentMine++;
         if (this.currentMine > this.maxMine) {
           this.currentMine = 0;
@@ -556,17 +614,38 @@ export class Ship extends Figure {
           }
         }
       } else {
-        this.mine = null;
+        this.mine = false;
+        this.mineTarget = null;
         this.currentMine = 0;
+      }
+    }
+    if (this.take) {
+      if ((this.contInRadius(this.takeRadius)) && (this.takeTarget !== null)) {
+        this.takeTarget.moveToFigure(this); // двигаем к себе контейнер
+        if (this.contInRadius(this.takeTarget.radius)) {
+            if (this.currentVolume < this.maxVolume) {
+              const cont = this.takeTarget as Cont;
+              if ((this.currentVolume + cont.volume) > this.maxVolume) {
+                cont.volume = this.maxVolume - this.currentVolume;
+              }
+              this.currentVolume += cont.volume;
+              this._goodsInBay[cont.good.id] += cont.volume;
+              this.sms('Получен предмет ' + cont.good.name + ' в количестве ' + cont.volume, 0);
+              this.takeTarget.state = State.DEAD;
+              this.figures.splice(this.figures.indexOf(this.takeTarget), 1);
+            } else {
+              this.sms('Грузовой отсек заполнен', 1);
+            }
+            this.take = false;
+            this.takeTarget = null;
+        }
+      } else {
+        this.take = false;
+        this.takeTarget = null;
       }
     }
 
     this.equipments.forEach(equipment => equipment.logic());
-    // if (!this.playerShip) {
-    //   if (this.chekpoints.length === 0) {
-    //     this.chekpoints.push(new Point(UtilService.getRandomInteger(100, 1000), UtilService.getRandomInteger(100, 1000)));
-    //   }
-    // }
   }
 
   fireRocket() {
@@ -654,18 +733,35 @@ export class Ship extends Figure {
   }
 
   mineInRadius(): boolean { // проверка, находимся ли рядом с астероидами
+    let t: Figure = null;
     if (this.mine) { // если уже копаем, то контролируем имеено по этому объекту, откуда копаем
-      if (this.mineTarget !== null) {
-        return UtilService.inRadius(this.point0, this.mineTarget.point0, this.mineTarget.radius);
-      } else {
-        return false;
-      }
+      t = this.mineTarget;
     } else {
-      if (this.target !== null) {
-        return UtilService.inRadius(this.point0, this.target.point0, this.target.radius);
-      } else {
-        return false;
-      }
+      t = this.target;
+    }
+    if (t !== null) {
+      return UtilService.inRadius(this.point0, t.point0, t.radius);
+    } else {
+      return false;
+    }
+  }
+
+  doTake() {
+    this.take = true;
+    this.takeTarget = this.target;
+  }
+
+  contInRadius(radius: number): boolean { // проверка, находимся ли рядом с контейнером в космосе
+    let t: Figure = null;
+    if (this.take) { // если уже тянем, то контролируем имеено по этому объекту
+      t = this.takeTarget;
+    } else {
+      t = this.target;
+    }
+    if (t !== null) {
+      return UtilService.inRadius(this.point0, t.point0, radius);
+    } else {
+      return false;
     }
   }
 
@@ -688,5 +784,29 @@ export class Ship extends Figure {
     this.message = message;
     this.messageStyle = style;
     this.newMessage = true;
+  }
+
+  private createCont() {
+    let good: Goods = null;
+    let volume = 0;
+    const r = UtilService.getRandomInteger(0, 10);
+    if (r <= 5) {
+      good = Goods.ALLOYS;
+      volume = UtilService.getRandomInteger(1, 4);
+    } else {
+      if (r <= 8) {
+        good = Goods.SLAVES;
+        volume = UtilService.getRandomInteger(1, 4);
+      } else {
+        if (r === 9) {
+          good = Goods.NARCOTICS;
+          volume = UtilService.getRandomInteger(1, 2);
+        } else {
+          good = Goods.PLATINUM;
+          volume = UtilService.getRandomInteger(1, 2);
+        }
+      }
+    }
+    this.figures.push(new Cont(new Point(this.point0.x, this.point0.y), this.figures, good, volume));
   }
 }

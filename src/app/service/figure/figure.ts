@@ -1,5 +1,5 @@
-import {Point} from './point';
-import {Line} from './line';
+import {Point} from '../point';
+import {Line} from '../line';
 
 export enum State {
   IDLE, FOLLOW, DOCKING, DOCK, DEAD, JUMP, BORDER
@@ -40,10 +40,18 @@ export class Figure {
   private maxTargetRot = 10;
   private _figures: Figure[] = [];
   private _name = '';
+  private _info = '';
   private cycleRot = 0;
   private oldRot = 0;
 
 
+  get info(): string {
+    return this._info;
+  }
+
+  set info(value: string) {
+    this._info = value;
+  }
 
   get oldState(): State {
     return this._oldState;
@@ -519,7 +527,10 @@ export class Figure {
       this.figures.splice(this.figures.indexOf(this), 1);
     }
     if (this.target !== null)  {
-      if ((this.state === State.DEAD) || (this.oldState === State.DEAD)) {
+      if ((this.target.state === State.DEAD) || (this.target.oldState === State.DEAD)) { // если моя цель угичтожена
+        this.target = null;
+      }
+      if ((this.state === State.DEAD) || (this.oldState === State.DEAD)) { // если я уничтожен, то снимаю цель
         this.target = null;
       }
     }
@@ -532,5 +543,8 @@ export class Figure {
   }
 
   toBattleMode(launcher: Figure) {
+  }
+
+  moveToFigure(figure: Figure) {
   }
 }

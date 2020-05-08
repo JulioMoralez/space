@@ -1,7 +1,7 @@
-import {Fraction, Role, Ship} from './ship';
+import {Fraction, Role, Ship} from './figure/ship';
 import {Point} from './point';
-import {Orb, TypeOrb} from './orb';
-import {Figure, State} from './figure';
+import {Orb, TypeOrb} from './figure/orb';
+import {Figure, State} from './figure/figure';
 import {UtilService} from './util.service';
 
 

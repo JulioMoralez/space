@@ -1,10 +1,10 @@
 import {Figure, State} from './figure';
-import {Point} from './point';
-import {Line} from './line';
+import {Point} from '../point';
+import {Line} from '../line';
 import {Weapon} from './weapon';
 import {Laser} from './laser';
 import {Ship} from './ship';
-import {Equip} from './equipment/equipment';
+import {Equip} from '../equipment/equipment';
 
 export class Rocket extends Weapon{
 

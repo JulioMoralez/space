@@ -1,6 +1,6 @@
 import {Figure} from './figure';
-import {Point} from './point';
-import {Line} from './line';
+import {Point} from '../point';
+import {Line} from '../line';
 
 export enum TypeOrb {
   SUN, PLANET, SATELLITE, STATION, BELT
