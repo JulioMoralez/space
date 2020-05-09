@@ -256,11 +256,11 @@ export class Solar {
       }
     }
     for (let i = 0; i < num; i++) { // добавляем станцию
-      planet = new Orb(UtilService.getRandomPointIntoMap(maxMapX, maxMapY), TypeOrb.STATION, 150, '', '');
+      planet = new Orb(UtilService.getRandomPointBorderMap(maxMapX, maxMapY), TypeOrb.STATION, 150, '', '');
       solars[i]._figures.push(planet);
     }
     for (let i = 0; i < num; i++) { // добавляем станцию
-      planet = new Orb(UtilService.getRandomPointIntoMap(maxMapX, maxMapY), TypeOrb.BELT, 150, '', '');
+      planet = new Orb(UtilService.getRandomPointBorderMap(maxMapX, maxMapY), TypeOrb.BELT, 150, '', '');
       solars[i]._figures.push(planet);
     }
 

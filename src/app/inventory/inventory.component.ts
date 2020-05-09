@@ -7,6 +7,8 @@ import {Cargobay} from '../service/equipment/cargobay';
 import {Figure, State} from '../service/figure/figure';
 import {Orb, TypeOrb} from '../service/figure/orb';
 import {Cont} from '../service/figure/cont';
+import {UtilService} from '../service/util.service';
+import {Point} from '../service/point';
 
 
 @Component({
@@ -268,7 +270,7 @@ export class InventoryComponent implements OnInit {
     if (cr <= this.game.credits) {
       this.game.credits -= cr;
       this.game.playerShip.currentFuel = this.game.playerShip.maxFuel;
-      this.game.sms('Бак полностью заправлен за ' + this.priceFuel.toFixed(1) + ' кредитов', 0);
+      this.game.sms('Бак полностью заправлен за ' + cr.toFixed(1) + ' кредитов', 0);
     } else {
       this.game.sms('Недостаточно кредитов', 1);
     }
@@ -350,24 +352,6 @@ export class InventoryComponent implements OnInit {
     }
   }
 
-  isMayDock(target: Figure): boolean {
-    if (target instanceof Orb) {
-      if (((target as Orb).typeOrb === TypeOrb.PLANET) || ((target as Orb).typeOrb === TypeOrb.STATION)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  isMayMine(target: Figure): boolean {
-    if (target instanceof Orb) {
-      if ((target as Orb).typeOrb === TypeOrb.BELT) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   mineInRadius(): boolean {
     return this.game.playerShip.mineInRadius();
   }
@@ -384,11 +368,18 @@ export class InventoryComponent implements OnInit {
     }
   }
 
-  isMayTake(target: Figure): boolean {
-    return (target instanceof Cont);
-  }
-
   contInRadius(): boolean {
     return this.game.playerShip.contInRadius(this.game.playerShip.takeRadius);
+  }
+
+  disableAttack(): boolean { // блокируем кнопку начала атаки
+    if ((this.game.playerShip.target === null) || // нет цели
+      (!UtilService.inRadius(this.game.playerShip.point0, this.game.playerShip.target.point0, 500)) || // цель далеко
+      (!this.game.isMayBattle(this.game.playerShip.target)) || // с целью нельзя сражаться
+      (this.game.playerShip.battleTarget === this.game.playerShip.target) || // уже сражаемся с целью
+      (this.game.playerShip.target === this.game.playerShip)) { // цель мы сами
+      return true;
+    }
+    return false;
   }
 }

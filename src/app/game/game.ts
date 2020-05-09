@@ -23,6 +23,7 @@ import {Container} from '../service/equipment/container';
 import {LogicRole} from '../service/logicRole';
 import {Scheduler} from '../service/scheduler';
 import {Orb, TypeOrb} from '../service/figure/orb';
+import {Cont} from '../service/figure/cont';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -326,10 +327,13 @@ export class GameComponent implements OnInit {
 
     for (let i = 1; i <= 7; i++) {
       const ship = new Ship(i, new Point(i * this.helpFigureStep + this.helpPoint0.x,  this.helpPoint0.y), null);
-      ship.logicRole = new LogicRole(Role.NONE, ship, this.maxMapX, this.maxMapY);
+      ship.logicRole = new LogicRole(Role.PLAYER, ship, this.maxMapX, this.maxMapY);
       this.helpFigures.push(ship);
     }
 
+    // const cont =  new Cont(new Point(300, 300), this.figures, Goods.NARCOTICS, 1);
+    // this.figures.push(cont);
+    //
     // const ship1 = new Ship(3, new Point(800, 300), this.figures);
     // this.figures.push(ship1);
     // ship1.logicRole = new LogicRole(Role.NONE, ship1, this.maxMapX, this.maxMapY);
@@ -399,6 +403,16 @@ export class GameComponent implements OnInit {
       case 0: {
         this.joy.reset();
         this.starmap.reset();
+        if (this.menu === Menu.HELP) {
+          for (const figure of this.helpFigures) { // выделяем корабль в режиме справки
+            if (UtilService.inRadius(figure.point0, new Point(
+              this.quickMenu.point0.x - this.borderMap - figure.radius + this.point0.x,
+              this.quickMenu.point0.y - this.borderMap - figure.radius + this.point0.y), figure.radius * 1.3)) {
+              this.helpTarget = figure;
+              return; // если в режиме справки, то не обрабатываем кнопки быстрого меню
+            }
+          }
+        }
         switch (this.quickMenu.reset()) {
           case 1: { // выбор
             for (const figure of this.figures) {
@@ -407,29 +421,35 @@ export class GameComponent implements OnInit {
                 break;
               }
             }
-            if (this.menu === Menu.HELP) {
-              for (const figure of this.helpFigures) { // выделяем корабль в режиме справки
-             if (UtilService.inRadius(figure.point0, new Point(
-                  this.quickMenu.point0.x - this.borderMap - figure.radius + this.point0.x,
-                  this.quickMenu.point0.y - this.borderMap - figure.radius + this.point0.y), figure.radius * 1.3)) {
-                  this.helpTarget = figure;
-                  break;
-                }
-              }
-            }
             break;
           }
           case 2: { // сброс
             if (this.playerShip.state !== State.DOCK) {
-              this.playerShip.resetTarget();
-              this.playerShip.hyperjumpCancel();
+              this.playerShip.allReset();
+              this.fromBattleMode();
             }
             break;
           }
           case 3: { // движение
+            if (this.playerShip.state !== State.DOCK) {
+              this.playerShip.moveToTarget(State.IDLE);
+            }
             break;
           }
-          case 4: {
+          case 4: {  // действие
+            if (this.playerShip.state !== State.DOCK) {
+              if (this.playerShip.target !== null) {
+                if (this.isMayDock(this.playerShip.target)) {
+                  this.playerShip.dock();
+                }
+                if (this.isMayMine(this.playerShip.target)) {
+                  this.playerShip.doMine();
+                }
+                if (this.isMayTake(this.playerShip.target)) {
+                  this.playerShip.doTake();
+                }
+              }
+            }
             break;
           }
         }
@@ -444,6 +464,32 @@ export class GameComponent implements OnInit {
     }
   }
 
+  isMayDock(target: Figure): boolean {
+    if (target instanceof Orb) {
+      if (((target as Orb).typeOrb === TypeOrb.PLANET) || ((target as Orb).typeOrb === TypeOrb.STATION)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isMayMine(target: Figure): boolean {
+    if (target instanceof Orb) {
+      if ((target as Orb).typeOrb === TypeOrb.BELT) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isMayTake(target: Figure): boolean {
+    return (target instanceof Cont);
+  }
+
+  isMayBattle(target: Figure): boolean {
+    return (target instanceof Ship);
+  }
+
 
   moveToTarget() {
     this.playerShip.moveToTarget(State.IDLE);
@@ -454,12 +500,10 @@ export class GameComponent implements OnInit {
   }
 
   dock() {
-    this.playerShip.dockingTarget = this.playerShip.target;
-    this.playerShip.moveToTarget(State.DOCKING);
+    this.playerShip.dock();
   }
 
   undock() {
-    this.playerShip.dockingTarget = null;
     this.playerShip.undock();
   }
 
@@ -473,10 +517,12 @@ export class GameComponent implements OnInit {
 
 
   fireRocket() {
+    this.playerShip.battleTarget = this.playerShip.target;
     this.playerShip.fireRocket();
   }
 
   fireLaser() {
+    this.playerShip.battleTarget = this.playerShip.target;
     this.playerShip.fireLaser();
   }
 
@@ -533,5 +579,18 @@ export class GameComponent implements OnInit {
 
   hyperjumpCancel() {
     this.playerShip.hyperjumpCancel();
+  }
+
+  toBattleMode() {
+    // чтобы можно было войти в режим битвы с другим кораблем, когда уже в данном режиме. Через другую роль
+    this.playerShip.logicRole.newRole(Role.PLAYER, this.playerShip.target);
+    this.playerShip.logicRole.newRole(Role.BATTLE, this.playerShip.target);
+  }
+
+  fromBattleMode() {
+    this.playerShip.allReset();
+    this.playerShip.logicRole.role = Role.PLAYER;
+    this.playerShip.battleTarget = null;
+    this.playerShip.battleMode = false;
   }
 }

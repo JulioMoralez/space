@@ -48,46 +48,57 @@
   <div>Тип экономики: {{game.solars[game.starmap.target].economy.name}}</div>
   <div>Богатство: {{game.solars[game.starmap.target].riches.name}}</div>
   <div>Технический уровень:  {{game.solars[game.starmap.target].techLevel}}</div>
-  <div *ngIf="game.playerShip.target !== null">
-    {{game.playerShip.target.name}}
-    <div *ngIf="game.playerShip.state !== State.DOCK">
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.moveToTarget()">Движение к цели</button>
-      </div>
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.followToTarget()">Движение за целью</button>
-      </div>
-      <div *ngIf="isMayDock(game.playerShip.target)">
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.dock()">Стыковка</button>
-      </div>
-      <div *ngIf="isMayMine(game.playerShip.target)">
-        <button [ngClass]="this.bstyle0" [disabled]="!mineInRadius()" type="submit" (click)="game.mine()">Копать</button>
-      </div>
-      <div *ngIf="isMayTake(game.playerShip.target)">
-        <button [ngClass]="this.bstyle0" [disabled]="!contInRadius()" type="submit" (click)="game.take()">Подобрать</button>
-      </div>
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireRocket()">Выстрел 1</button>
-      </div>
-      <div>
-        <button [ngClass]="this.bstyle0" type="submit" (click)="game.fireLaser()">Выстрел 2</button>
-      </div>
-      <div>
-        <button [ngClass]="this.bstyle2" type="submit" (click)="game.povorot(-10)">A</button>
-        <button [ngClass]="this.bstyle2" type="submit" (click)="game.povorot(10)">D</button>
-        <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(5)">W</button>
-        <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(-5)">S</button>
-      </div>
-    </div>
-    <div *ngIf="game.playerShip.state === State.DOCK">
-      <button [ngClass]="this.bstyle0" type="submit" (click)="game.undock()">Вылет</button>
-    </div>
+  <table *ngIf="game.playerShip.state !== State.DOCK">
+    <tr valign="top">
+      <td>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.target === null" type="submit" (click)="game.moveToTarget()">Движение к цели</button>
+        </div>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.target === null" type="submit" (click)="game.followToTarget()">Движение за целью</button>
+        </div>
+        <div *ngIf="game.isMayDock(game.playerShip.target)">
+          <button [ngClass]="this.bstyle0" type="submit" (click)="game.dock()">Стыковка</button>
+        </div>
+        <div *ngIf="game.isMayMine(game.playerShip.target)">
+          <button [ngClass]="this.bstyle0" [disabled]="!mineInRadius()" type="submit" (click)="game.mine()">Копать</button>
+        </div>
+        <div *ngIf="game.isMayTake(game.playerShip.target)">
+          <button [ngClass]="this.bstyle0" [disabled]="!contInRadius()" type="submit" (click)="game.take()">Подобрать</button>
+        </div>
+      </td>
+      <td>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="disableAttack()" type="submit" (click)="game.toBattleMode()">Атаковать</button>
+        </div>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="!game.playerShip.battleMode" type="submit" (click)="game.fromBattleMode()">Прекратить атаку</button>
+        </div>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.target === null" type="submit" (click)="game.fireLaser()">Лазер</button>
+        </div>
+        <div>
+          <button [ngClass]="this.bstyle0" [disabled]="game.playerShip.target === null" type="submit" (click)="game.fireRocket()">Пуск ракеты</button>
+        </div>
+      </td>
+    </tr>
+  </table>
+  <div *ngIf="game.playerShip.state === State.DOCK">
+    <button [ngClass]="this.bstyle0" type="submit" (click)="game.undock()">Вылет</button>
   </div>
   <button *ngIf="game.playerShip.state === State.JUMP" class="btn btn-outline-info" type="submit" (click)="game.hyperjumpCancel()">Отмена прыжка</button>
+<!--  <div>-->
+<!--    <button [ngClass]="this.bstyle2" type="submit" (click)="game.povorot(-10)">A</button>-->
+<!--    <button [ngClass]="this.bstyle2" type="submit" (click)="game.povorot(10)">D</button>-->
+<!--    <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(5)">W</button>-->
+<!--    <button [ngClass]="this.bstyle2" type="submit" (click)="game.forward(-5)">S</button>-->
+<!--  </div>-->
+  <div *ngIf="game.playerShip.target !== null">
+    {{game.playerShip.target.name}}
+  </div>
 </div>
 
 <div class="my-3" *ngIf="game.menu === Menu.TRADE">
-<!--  <div *ngIf="game.playerShip.state === State.DOCK">-->
     <table class="table">
       <thead class="bg-info">
       <tr>
@@ -119,11 +130,7 @@
     <div class="my-3" *ngIf="game.playerShip.state === State.DOCK">
       <button [ngClass]="this.bstyle0" type="submit" (click)="minusAllGoods()">Продать весь товар</button>
     </div>
-  </div>
-<!--  <div *ngIf="game.message !== ''" [ngClass]="this.game.messageStyle" role="alert">-->
-<!--    {{game.message}}-->
-<!--  </div>-->
-<!--</div>-->
+</div>
 
 <div class="my-3" *ngIf="game.menu === Menu.STAT">
  <table>
@@ -228,9 +235,6 @@
      </td>
    </tr>
  </table>
-<!--  <div *ngIf="game.message !== ''" [ngClass]="this.game.messageStyle" role="alert">-->
-<!--    {{game.message}}-->
-<!--  </div>-->
 </div>
 
   <div class="my-3" *ngIf="game.menu === Menu.INVENTORY">
@@ -353,5 +357,4 @@
 <div *ngIf="game.messageWithRepeat !== ''" [ngClass]="this.game.messageStyle" role="alert">
   {{game.messageWithRepeat}}
 </div>
-
 

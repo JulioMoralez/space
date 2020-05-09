@@ -11,7 +11,7 @@ export class Scheduler {
   private currentCountPatrul = 0;
   private maxCountTrader = 0;
   private currentCountTrader = 0;
-  private maxCountPirate = 0;
+  private maxCountPirate = 2;
   private currentCountPirate = 0;
 
 
@@ -49,7 +49,7 @@ export class Scheduler {
   }
 
   createPatrul() {
-    const ship = new Ship(4, new Point(UtilService.getRandomInteger(100, this.game.maxMapX - 100),
+    const ship = new Ship(3, new Point(UtilService.getRandomInteger(100, this.game.maxMapX - 100),
                                             UtilService.getRandomInteger(100, this.game.maxMapY - 100)), this.game.figures);
     ship.logicRole = new LogicRole(Role.PATRUL, ship, this.game.maxMapX, this.game.maxMapY);
     ship.fraction = Fraction.POLICE;
@@ -57,14 +57,14 @@ export class Scheduler {
   }
 
   private createTrader() {
-    const ship = new Ship(3, UtilService.getRandomPointOverMap(this.game.maxMapX, this.game.maxMapY), this.game.figures);
+    const ship = new Ship(5, UtilService.getRandomPointOverMap(this.game.maxMapX, this.game.maxMapY), this.game.figures);
     ship.logicRole = new LogicRole(Role.TRADER, ship, this.game.maxMapX, this.game.maxMapY);
     ship.fraction = Fraction.TRADER;
     this.game.figures.push(ship);
   }
 
   private createPirate() {
-    const ship = new Ship(3, new Point(UtilService.getRandomInteger(100, this.game.maxMapX - 100),
+    const ship = new Ship(UtilService.getRandomInteger(6, 7) , new Point(UtilService.getRandomInteger(100, this.game.maxMapX - 100),
       UtilService.getRandomInteger(this.game.maxMapY - 300, this.game.maxMapY - 100)), this.game.figures);
     ship.logicRole = new LogicRole(Role.PIRATE, ship, this.game.maxMapX, this.game.maxMapY);
     ship.fraction = Fraction.PIRATE;

@@ -12,7 +12,7 @@ export class Weapon extends Figure{
     super(new Point(launcher.point0.x, launcher.point0.y));
     this.launcher = launcher;
     this.figures = launcher.figures;
-    this.target = launcher.target;
+    this.target = launcher.battleTarget;
     this.angle = launcher.angle;
 
   }

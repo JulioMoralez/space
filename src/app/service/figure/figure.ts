@@ -43,7 +43,15 @@ export class Figure {
   private _info = '';
   private cycleRot = 0;
   private oldRot = 0;
+  private _battleMode = false;
 
+  get battleMode(): boolean {
+    return this._battleMode;
+  }
+
+  set battleMode(value: boolean) {
+    this._battleMode = value;
+  }
 
   get info(): string {
     return this._info;
@@ -440,24 +448,31 @@ export class Figure {
                   rot = d < dt ? -this._rot : this._rot;
                 }
               }
-              if (this.currentSpeed < this._maxSpeed) { // набор скорости
+              if ((this.currentSpeed + this._accSpeed) < this._maxSpeed) { // набор скорости
                 this.currentSpeed += this._accSpeed;
+              } else {
+                this.currentSpeed = this.maxSpeed;
               }
               if (this._state === State.FOLLOW) { // регулируем скорость при следовании за целью
                 if ((this.target !== null ) && (h < (this._radius * this.followRadius))) { // при приближении к цели ближе указанного
-                  if ((h < this._radius * (this.followRadius - 2)) && (this.state !== State.BORDER)) {
+                  if ((h < this._radius * (this.followRadius - 2)) && (this.state !== State.BORDER) && (this.battleMode)) {
                     this.oldState = this.state;
-                    this.state = State.BORDER;
-                    this._chekpoints.unshift(new Point(this.point0.x + Math.sin(d * Math.PI / 180) * 200, this.point0.y + Math.cos(d * Math.PI / 180) * 200));
+                    this.state = State.BORDER; // состояние прнудительного подлёта к точке, в данном случае боевой маневр
+                    this._chekpoints.unshift(new Point(this.point0.x + Math.sin(d * Math.PI / 180) * 200,
+                                                        this.point0.y + Math.cos(d * Math.PI / 180) * 200));
                   } else {
-                    if (h < this.hToTargetOld) {
+                    if (h <= this.hToTargetOld) {
                       // замедляемся на 2x ускорения (ускорение на 1x выше по коду на этом же цикле), что даёт замедление на 1x
                       this.currentSpeed -= 2 * this._accSpeed;
-                    } else {
-                      this.currentSpeed -= this._accSpeed;
                     }
-                    if (this.currentSpeed < 0) {
-                      this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
+                    if (this.battleMode) {
+                      if (this.currentSpeed <= 0.3) {
+                        this.currentSpeed = 0.3;   // если в бою, то полностью не останавливаемся
+                      }
+                    } else {
+                      if (this.currentSpeed <= 0) {
+                        this.currentSpeed = 0;   // останавливаемся. Нет заднего хода
+                      }
                     }
                   }
                 }
@@ -519,6 +534,9 @@ export class Figure {
     this._chekpoints.length = 0;
     this._state = State.IDLE;
     this._target = null;
+  }
+
+  allReset() {
   }
 
   logic() {

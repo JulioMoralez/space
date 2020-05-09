@@ -42,11 +42,11 @@ export class LogicRole {
     this.maxMapY = maxMapY;
   }
 
-  checkDistance(point1: Point, point2: Point, radius: number): boolean { // проверка близости расстояния
-    const dx = point1.x - point2.x;
-    const dy = point1.y - point2.y;
-    return (Math.sqrt(dx * dx + dy * dy) < radius);
-  }
+  // checkDistance(point1: Point, point2: Point, radius: number): boolean { // проверка близости расстояния
+  //   const dx = point1.x - point2.x;
+  //   const dy = point1.y - point2.y;
+  //   return (Math.sqrt(dx * dx + dy * dy) < radius);
+  // }
 
   checkFraction(fraction1: Fraction, fraction2: Fraction): boolean {  // проверка враждебности
     if (fraction1 === Fraction.TRADER) {
@@ -86,15 +86,25 @@ export class LogicRole {
   }
 
   findPlanet(): boolean {
+    let minDistance = -1;
+    let currentDistance: number;
+    let minOrb: Figure = null;
     for (const figure of this.ship.figures) {
       if ((figure instanceof Orb) && ((figure as Orb).typeOrb === TypeOrb.PLANET) && (this.markPlanet.indexOf(figure) === -1)) {
-        this.markPlanet.push(figure);
-        this.ship.target = figure;
-        this.ship.dockingTarget = figure;
-        this.ship.moveToTarget(State.DOCKING);
-        this.stage++;
-        return true;
+        currentDistance = UtilService.distance(this.ship.point0, figure.point0);
+        if ((minDistance === -1) || (currentDistance < minDistance)) {
+          minDistance = currentDistance;
+          minOrb = figure;
+        }
       }
+    }
+    if (minOrb !== null) {
+      this.markPlanet.push(minOrb);
+      this.ship.target = minOrb;
+      this.ship.dockingTarget = minOrb;
+      this.ship.moveToTarget(State.DOCKING);
+      this.stage++;
+      return true;
     }
     this.stage += 2;
     return false;
@@ -133,8 +143,8 @@ export class LogicRole {
     for (const figure of this.ship.figures) {
       if ((figure instanceof Ship) && ((figure as Ship) !== this.ship)) {
         anotherShip = figure as Ship;
-        if (this.ship.state !== State.DOCK) {
-          if (this.checkDistance(this.ship.point0, anotherShip.point0, 300)) {
+        if ((this.ship.state !== State.DOCK) && (this.role !== Role.PLAYER) && (anotherShip.state !== State.DOCK)) {
+          if (UtilService.inRadius(this.ship.point0, anotherShip.point0, 300)) {
             if (this.checkFraction(this.ship.fraction, anotherShip.fraction)) {
               this.newRole(Role.BATTLE, anotherShip);
               break;
@@ -181,13 +191,17 @@ export class LogicRole {
         switch (this.stage) {
           case 0: {
             this.ship.moveToTarget(State.FOLLOW);
+            this.ship.battleTarget = this.ship.target;
             this.ship.battleMode = true;
             this.stage++;
             break;
           }
           case 1: {
-            if (((this.ship.target !== null) && ((this.ship.target.state === State.DEAD) || (this.ship.target.oldState === State.DEAD)))
-                    || (this.ship.target === null)) {
+            if (((this.ship.battleTarget !== null) && ((this.ship.battleTarget.state === State.DEAD) ||
+              (this.ship.battleTarget.oldState === State.DEAD))) || (this.ship.battleTarget === null) ||
+              (this.ship.battleTarget.state === State.DOCK) ||
+              (!UtilService.inRadius(this.ship.point0, this.ship.battleTarget.point0, 500))) { // если цель улетела
+              this.ship.battleTarget = null;
               this.ship.target = null;
               this.ship.battleMode = false;
               this.returnRole();
@@ -215,6 +229,7 @@ export class LogicRole {
           }
           case 3: {
             if (this.ship.state === State.BORDER) {
+              this.role = Role.BORDER;
               this.ship.state = State.DEAD;
               this.stage++;
             }
@@ -237,8 +252,8 @@ export class LogicRole {
         switch (this.stage) {
           case 0: {
             this.ship.chekpoints.length = 0;
-            this.ship.chekpoints.push(new Point(200, this.maxMapY - 200));
-            this.ship.chekpoints.push(new Point(this.maxMapX - 200, this.maxMapY - 200));
+            this.ship.chekpoints.push(UtilService.getRandomPointIntoMap(this.maxMapX, this.maxMapY));
+            this.ship.chekpoints.push(UtilService.getRandomPointIntoMap(this.maxMapX, this.maxMapY));
             this.stage++;
             break;
           }

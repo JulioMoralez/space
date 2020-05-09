@@ -37,26 +37,36 @@ export class UtilService {
     }
   }
 
-  static getRandomPointIntoMap(maxMapX: number, maxMapY: number): Point {
+  static getRandomPointBorderMap(maxMapX: number, maxMapY: number): Point {
     switch (UtilService.getRandomInteger(0, 3)) {
       case 0: {
-        return new Point(200, UtilService.getRandomInteger(0, maxMapY));
+        return new Point(300, UtilService.getRandomInteger(0, maxMapY));
       }
       case 1: {
-        return new Point(maxMapX - 200, UtilService.getRandomInteger(0, maxMapY));
+        return new Point(maxMapX - 300, UtilService.getRandomInteger(0, maxMapY - 300));
       }
       case 2: {
-        return new Point(UtilService.getRandomInteger(0, maxMapX), 200);
+        return new Point(UtilService.getRandomInteger(0, maxMapX), 300);
       }
       case 3: {
-        return new Point(UtilService.getRandomInteger(0, maxMapX), maxMapY - 200);
+        return new Point(UtilService.getRandomInteger(0, maxMapX - 300), maxMapY - 300);
       }
     }
+  }
+
+  static getRandomPointIntoMap(maxMapX: number, maxMapY: number): Point {
+    return new Point(UtilService.getRandomInteger(100, maxMapX - 100), UtilService.getRandomInteger(100, maxMapY - 100));
   }
 
   static inRadius(point1: Point, point2: Point, radius: number): boolean {
     const dx = point1.x - point2.x;
     const dy = point1.y - point2.y;
     return (Math.sqrt(dx * dx + dy * dy) < radius);
+  }
+
+  static distance(point1: Point, point2): number {
+    const dx = point1.x - point2.x;
+    const dy = point1.y - point2.y;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 }

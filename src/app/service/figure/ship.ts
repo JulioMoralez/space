@@ -16,7 +16,7 @@ import {Goods} from '../goods';
 import {Cont} from './cont';
 
 export enum Role {
-  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE, NONE
+  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE, NONE, BORDER
 }
 
 export enum Fraction {
@@ -47,7 +47,6 @@ export class Ship extends Figure {
   private _hyperjumpEnded = false;
   private currentJumpRadius = this.radius * 2;
   private currentJumpWidth = 1;
-  private _battleMode = false;
   private _logicRole: LogicRole;
   private _fraction: Fraction;
   private maxMine = 100;
@@ -60,8 +59,17 @@ export class Ship extends Figure {
   private _newMessage = false;
   private take = false;
   private takeTarget: Figure = null;
+  private _battleTarget: Figure = null;
   private _takeRadius = this.radius * 7;
 
+
+  get battleTarget(): Figure {
+    return this._battleTarget;
+  }
+
+  set battleTarget(value: Figure) {
+    this._battleTarget = value;
+  }
 
   get takeRadius(): number {
     return this._takeRadius;
@@ -113,14 +121,6 @@ export class Ship extends Figure {
 
   set logicRole(value: LogicRole) {
     this._logicRole = value;
-  }
-
-  get battleMode(): boolean {
-    return this._battleMode;
-  }
-
-  set battleMode(value: boolean) {
-    this._battleMode = value;
   }
 
   get maxVolume(): number {
@@ -300,54 +300,10 @@ export class Ship extends Figure {
         this.lines.push(new Line(5, 7, color, width));
         this.lines.push(new Line(5, 6, color, width));
         this.lines.push(new Line(6, 10, color, width));
-        this.chooseEquip(1, 1, 4, 1, 2, 1, 1, 5);
+        this.chooseEquip(1, 1, 4, 1, 1, 1, 2, 5);
         break;
       }
       case 2: {
-        this.name = 'Adder';
-        this.info = 'Корабль разработан и выпускается компанией, работающей без лицензии. ' +
-          'Местоположение ее штаб-квартиры неизвестно. ' +
-          'Используется в основном контрабандистами. Вооружение слабое — несет только одну пусковую ракетную установку.';
-        this.scale = 1;
-        this.radius = 50 * this.scale;
-        this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
-        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 40 * this.scale));
-        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 40 * this.scale));
-        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 10 * this.scale));
-        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 10 * this.scale));
-        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x + 20 * this.scale, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x - 20 * this.scale, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 30 * this.scale));
-        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 30 * this.scale));
-        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 20 * this.scale));
-        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 20 * this.scale));
-        this.setAxis(this.points[0], this.points[1]);
-        const color = 'white';
-        const width = 1;
-        this.lines.push(new Line(2, 10, color, width));
-        this.lines.push(new Line(2, 3 , color, width));
-        this.lines.push(new Line(3, 11, color, width));
-        this.lines.push(new Line(4, 5, color, width));
-        this.lines.push(new Line(6, 2, color, width));
-        this.lines.push(new Line(6, 4, color, width));
-        this.lines.push(new Line(6, 8, color, width));
-        this.lines.push(new Line(7, 3, color, width));
-        this.lines.push(new Line(7, 5, color, width));
-        this.lines.push(new Line(7, 9, color, width));
-        this.lines.push(new Line(8, 9, color, width));
-        this.lines.push(new Line(12, 14, color, width));
-        this.lines.push(new Line(14, 15, color, width));
-        this.lines.push(new Line(15, 13, color, width));
-        this.lines.push(new Line(13, 12, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 6);
-        break;
-      }
-      case 3: {
         this.name = 'Asp MK-2';
         this.info = 'Основная боевая единица Галактического Флота. ' +
           'Корабль разработан и изготавливается на государственных заводах. ' +
@@ -390,74 +346,7 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 4: {
-        this.name = 'Krait';
-        this.info = 'Небольшой, надежный одноместный истребитель. ' +
-          'В последние годы был вытеснен более совершенными кораблями, но в отдаленных секторах космоса он все еще встречается. ' +
-          'Запасные части давно не выпускаются и пилоты нередко добывают их посредством пиратства.';
-        this.scale = 1;
-        this.radius = 50 * this.scale;
-        this.points.push(new Point(point0.x, point0.y - 25 * this.scale));
-        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
-        this.points.push(new Point(point0.x + 35 * this.scale, point0.y - 25 * this.scale));
-        this.points.push(new Point(point0.x - 35 * this.scale, point0.y - 25 * this.scale));
-        this.points.push(new Point(point0.x + 35 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x - 35 * this.scale, point0.y + 10 * this.scale));
-        this.points.push(new Point(point0.x, point0.y - 8 * this.scale));
-        this.points.push(new Point(point0.x + 10 * this.scale, point0.y + 7 * this.scale));
-        this.points.push(new Point(point0.x, point0.y + 2 * this.scale));
-        this.points.push(new Point(point0.x - 10 * this.scale, point0.y + 7 * this.scale));
-        this.setAxis(this.points[0], this.points[1]);
-        const color = 'white';
-        const width = 1;
-        this.lines.push(new Line(0, 6, color, width));
-        this.lines.push(new Line(8, 1, color, width));
-        this.lines.push(new Line(0, 4, color, width));
-        this.lines.push(new Line(4, 1, color, width));
-        this.lines.push(new Line(1, 5, color, width));
-        this.lines.push(new Line(5, 0, color, width));
-        this.lines.push(new Line(3, 5, color, width));
-        this.lines.push(new Line(2, 4, color, width));
-        this.lines.push(new Line(6, 7, color, width));
-        this.lines.push(new Line(7, 8, color, width));
-        this.lines.push(new Line(8, 9, color, width));
-        this.lines.push(new Line(9, 6, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
-        break;
-      }
-      case 5: {
-        this.name = 'Python';
-        this.info = 'Один из самых крупных торговых кораблей. ' +
-          'Малая скорость и плохая маневренность компенсируется мощнейшими установками защитных полей и мощным лазером. ' +
-          'Редко подвергается атакам пиратских кораблей и широко используется ' +
-          'свободными предпринимателями в качестве временного склада в челночных операциях и как промежуточная база отдыха.';
-        this.scale = 1;
-        this.radius = 50 * this.scale;
-        this.points.push(new Point(point0.x, point0.y - 65 * this.scale));
-        this.points.push(new Point(point0.x, point0.y + 60 * this.scale));
-        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 18 * this.scale));
-        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 18 * this.scale));
-        this.points.push(new Point(point0.x + 15 * this.scale, point0.y + 60 * this.scale));
-        this.points.push(new Point(point0.x - 15 * this.scale, point0.y + 60 * this.scale));
-        this.points.push(new Point(point0.x, point0.y - 5 * this.scale));
-        this.setAxis(this.points[0], this.points[1]);
-        const color = 'white';
-        const width = 1;
-        this.lines.push(new Line(0, 1, color, width));
-        this.lines.push(new Line(0, 2, color, width));
-        this.lines.push(new Line(2, 4, color, width));
-        this.lines.push(new Line(4, 5, color, width));
-        this.lines.push(new Line(5, 3, color, width));
-        this.lines.push(new Line(3, 0, color, width));
-        this.lines.push(new Line(2, 3, color, width));
-        this.lines.push(new Line(6, 2, color, width));
-        this.lines.push(new Line(2, 1, color, width));
-        this.lines.push(new Line(1, 3, color, width));
-        this.lines.push(new Line(3, 6, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
-        break;
-      }
-      case 6: {
+      case 3: {
         this.name = 'Viper';
         this.info = 'Малый, надежный, высокоманевренный истребитель-перехватчик. ' +
           'Изготовлен по заказу полицейских сил для патрулирования. ' +
@@ -485,7 +374,7 @@ export class Ship extends Figure {
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
-      case 7: {
+      case 4: {
         this.name = 'Fer-de-Lance';
         this.info = 'Корабль наиболее широко используется состоятельными охотниками за призами и независимыми компаниями в деловых операциях. ' +
           'Изысканный корабль, пригодный как для деловых вояжей бизнесменов, так и для боевого применения и для комфортабельного отдыха. ' +
@@ -522,6 +411,116 @@ export class Ship extends Figure {
         this.lines.push(new Line(9, 0, color, width));
         this.lines.push(new Line(8, 6, color, width));
         this.lines.push(new Line(8, 0, color, width));
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        break;
+      }
+      case 5: {
+        this.name = 'Python';
+        this.info = 'Один из самых крупных торговых кораблей. ' +
+          'Малая скорость и плохая маневренность компенсируется мощнейшими установками защитных полей и мощным лазером. ' +
+          'Редко подвергается атакам пиратских кораблей и широко используется ' +
+          'свободными предпринимателями в качестве временного склада в челночных операциях и как промежуточная база отдыха.';
+        this.scale = 1;
+        this.radius = 50 * this.scale;
+        this.points.push(new Point(point0.x, point0.y - 65 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 60 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 18 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 18 * this.scale));
+        this.points.push(new Point(point0.x + 15 * this.scale, point0.y + 60 * this.scale));
+        this.points.push(new Point(point0.x - 15 * this.scale, point0.y + 60 * this.scale));
+        this.points.push(new Point(point0.x, point0.y - 5 * this.scale));
+        this.setAxis(this.points[0], this.points[1]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(0, 1, color, width));
+        this.lines.push(new Line(0, 2, color, width));
+        this.lines.push(new Line(2, 4, color, width));
+        this.lines.push(new Line(4, 5, color, width));
+        this.lines.push(new Line(5, 3, color, width));
+        this.lines.push(new Line(3, 0, color, width));
+        this.lines.push(new Line(2, 3, color, width));
+        this.lines.push(new Line(6, 2, color, width));
+        this.lines.push(new Line(2, 1, color, width));
+        this.lines.push(new Line(1, 3, color, width));
+        this.lines.push(new Line(3, 6, color, width));
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        break;
+      }case 6: {
+        this.name = 'Krait';
+        this.info = 'Небольшой, надежный одноместный истребитель. ' +
+          'В последние годы был вытеснен более совершенными кораблями, но в отдаленных секторах космоса он все еще встречается. ' +
+          'Запасные части давно не выпускаются и пилоты нередко добывают их посредством пиратства.';
+        this.scale = 1;
+        this.radius = 50 * this.scale;
+        this.points.push(new Point(point0.x, point0.y - 25 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 35 * this.scale, point0.y - 25 * this.scale));
+        this.points.push(new Point(point0.x - 35 * this.scale, point0.y - 25 * this.scale));
+        this.points.push(new Point(point0.x + 35 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x - 35 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x, point0.y - 8 * this.scale));
+        this.points.push(new Point(point0.x + 10 * this.scale, point0.y + 7 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 2 * this.scale));
+        this.points.push(new Point(point0.x - 10 * this.scale, point0.y + 7 * this.scale));
+        this.setAxis(this.points[0], this.points[1]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(0, 6, color, width));
+        this.lines.push(new Line(8, 1, color, width));
+        this.lines.push(new Line(0, 4, color, width));
+        this.lines.push(new Line(4, 1, color, width));
+        this.lines.push(new Line(1, 5, color, width));
+        this.lines.push(new Line(5, 0, color, width));
+        this.lines.push(new Line(3, 5, color, width));
+        this.lines.push(new Line(2, 4, color, width));
+        this.lines.push(new Line(6, 7, color, width));
+        this.lines.push(new Line(7, 8, color, width));
+        this.lines.push(new Line(8, 9, color, width));
+        this.lines.push(new Line(9, 6, color, width));
+        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        break;
+      }
+      case 7: {
+        this.name = 'Adder';
+        this.info = 'Корабль разработан и выпускается компанией, работающей без лицензии. ' +
+          'Местоположение ее штаб-квартиры неизвестно. ' +
+          'Используется в основном контрабандистами. Вооружение слабое — несет только одну пусковую ракетную установку.';
+        this.scale = 1;
+        this.radius = 50 * this.scale;
+        this.points.push(new Point(point0.x, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 40 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y - 10 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y - 10 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 10 * this.scale));
+        this.points.push(new Point(point0.x + 30 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 30 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 20 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x - 20 * this.scale, point0.y + 30 * this.scale));
+        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 30 * this.scale));
+        this.points.push(new Point(point0.x + 10 * this.scale, point0.y - 20 * this.scale));
+        this.points.push(new Point(point0.x - 10 * this.scale, point0.y - 20 * this.scale));
+        this.setAxis(this.points[0], this.points[1]);
+        const color = 'white';
+        const width = 1;
+        this.lines.push(new Line(2, 10, color, width));
+        this.lines.push(new Line(2, 3 , color, width));
+        this.lines.push(new Line(3, 11, color, width));
+        this.lines.push(new Line(4, 5, color, width));
+        this.lines.push(new Line(6, 2, color, width));
+        this.lines.push(new Line(6, 4, color, width));
+        this.lines.push(new Line(6, 8, color, width));
+        this.lines.push(new Line(7, 3, color, width));
+        this.lines.push(new Line(7, 5, color, width));
+        this.lines.push(new Line(7, 9, color, width));
+        this.lines.push(new Line(8, 9, color, width));
+        this.lines.push(new Line(12, 14, color, width));
+        this.lines.push(new Line(14, 15, color, width));
+        this.lines.push(new Line(15, 13, color, width));
+        this.lines.push(new Line(13, 12, color, width));
         this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
         break;
       }
@@ -586,14 +585,14 @@ export class Ship extends Figure {
 
   logic() {
     super.logic();
-    if (this.state === State.DEAD) { // в случае своей гибели оставляем контейнер
+    if ((this.state === State.DEAD) && (this.logicRole.role !== Role.BORDER)) { // в случае своей гибели оставляем контейнер
       this.createCont();
     }
     this.logicRole.useRole();
-    if ((this._battleMode === true) && (this.target !== null) && (this.target.state !== State.DOCK)) {
+    if ((this.battleMode === true) && (this.battleTarget !== null) && (this.battleTarget.state !== State.DOCK)) {
       this.fireLaser();
     }
-    let t = 0;
+    let t: number;
     // щит
     t = (this.currentShield + this.maxAccShield > this.maxShield) ? this.maxShield : this.currentShield + this.maxAccShield;
     this.currentShield = t > 0 ? t : 0;
@@ -661,7 +660,7 @@ export class Ship extends Figure {
   }
 
   toBattleMode(launcher: Figure) { // отвечаем атакующему
-    if (this.logicRole.role !== Role.BATTLE) {
+    if ((this.logicRole.role !== Role.BATTLE) && (this.logicRole.role !== Role.PLAYER)) {
       this.logicRole.newRole(Role.BATTLE, launcher);
     }
   }
@@ -669,6 +668,8 @@ export class Ship extends Figure {
   hyperjumpStartAnim() {
     this.target = null;
     this.chekpoints.length = 0;
+    this.currentJumpRadius = this.radius * 2;
+    this.currentJumpWidth = 1;
     this.state = State.JUMP;
   }
 
@@ -728,12 +729,18 @@ export class Ship extends Figure {
   }
 
   doMine() {
-    this.mine = true;
-    this.mineTarget = this.target;
+    if (this.mineInRadius()) {
+      this.mine = true;
+      this.mineTarget = this.target;
+      this.sms('Начата добыча ресурсов', 0);
+    } else {
+      this.sms('Вы находитесь вне радиуса добычи ресурсов', 1);
+    }
+
   }
 
   mineInRadius(): boolean { // проверка, находимся ли рядом с астероидами
-    let t: Figure = null;
+    let t: Figure;
     if (this.mine) { // если уже копаем, то контролируем имеено по этому объекту, откуда копаем
       t = this.mineTarget;
     } else {
@@ -747,12 +754,17 @@ export class Ship extends Figure {
   }
 
   doTake() {
-    this.take = true;
-    this.takeTarget = this.target;
+    if (this.contInRadius(this.takeRadius)) {
+      this.take = true;
+      this.takeTarget = this.target;
+      this.sms('Контейнер захвачен гравитационным лучем', 0);
+    } else {
+      this.sms('Контейнер за пределами действия гравитационного луча', 1);
+    }
   }
 
   contInRadius(radius: number): boolean { // проверка, находимся ли рядом с контейнером в космосе
-    let t: Figure = null;
+    let t: Figure;
     if (this.take) { // если уже тянем, то контролируем имеено по этому объекту
       t = this.takeTarget;
     } else {
@@ -765,7 +777,14 @@ export class Ship extends Figure {
     }
   }
 
+  dock() {
+    this.dockingTarget = this.target;
+    this.moveToTarget(State.DOCKING);
+    this.sms('Стыкуемся с объектом ' + this.dockingTarget.name, 0);
+  }
+
   undock() {
+    this.dockingTarget = null;
     this.currentSpeed = this.maxSpeed;
     this.chekpoints.length = 0;
     for (const point of this.points) {
@@ -787,8 +806,8 @@ export class Ship extends Figure {
   }
 
   private createCont() {
-    let good: Goods = null;
-    let volume = 0;
+    let good: Goods;
+    let volume: number;
     const r = UtilService.getRandomInteger(0, 10);
     if (r <= 5) {
       good = Goods.ALLOYS;
@@ -808,5 +827,14 @@ export class Ship extends Figure {
       }
     }
     this.figures.push(new Cont(new Point(this.point0.x, this.point0.y), this.figures, good, volume));
+  }
+
+  allReset() { // сброс все текущих действий
+    this.resetTarget();
+    this.hyperjumpCancel();
+    this.mine = false;
+    this.mineTarget = null;
+    this.take = false;
+    this.takeTarget = null;
   }
 }

@@ -47,13 +47,17 @@ export class QuickMenu {
         }
       }
       if (this.currentRadius < this.endRadius) {
-        this.currentRadius++;
+        if (this.endAnimation === 1) { // если сектор выбран, то анимация медленная
+          this.currentRadius ++;
+        } else {
+          this.currentRadius += 3;
+        }
       }
       if (this.currentWidth < this.endWidth) {
         this.currentWidth++;
       }
       // конец анимации выбранного сектора
-      if ((this.endAnimation) && (this.currentRadius >= this.endRadius)) {
+      if ((this.endAnimation === 1) && (this.currentRadius >= this.endRadius)) {
         this.click = false;
         this.endAnimation = 0;
       }
@@ -71,9 +75,15 @@ export class QuickMenu {
   }
 
   reset(): number {
-    this.endAnimation = 1;
-    this.currentRadius = this.startRadius;
-    return this.selectedZone;
+    if (this.currentRadius < this.endRadius) {
+      this.endAnimation = 2;
+      this.currentRadius = this.endRadius;
+      return  1;  // по умолчанию выберается сектор вниз
+    } else {
+      this.endAnimation = 1;
+      this.currentRadius = this.startRadius;
+      return this.selectedZone;
+    }
   }
 
   use(x: number, y: number, point0: Point) {

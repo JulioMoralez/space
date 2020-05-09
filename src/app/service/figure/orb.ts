@@ -45,6 +45,7 @@ export class Orb extends Figure{
     this.colorFill = colorFill;
     this.colorBorder = colorBorder;
     if (typeOrb === TypeOrb.STATION) {
+      this.name = 'Станция';
       this.scale = 2;
       this.radius = 50 * this.scale;
       this.points.push(new Point(point0.x, point0.y - 50 * this.scale));
