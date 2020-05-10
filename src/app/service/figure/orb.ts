@@ -1,6 +1,7 @@
 import {Figure} from './figure';
 import {Point} from '../point';
 import {Line} from '../line';
+import {Equipment} from '../equipment/equipment';
 
 export enum TypeOrb {
   SUN, PLANET, SATELLITE, STATION, BELT
@@ -20,7 +21,16 @@ export class Orb extends Figure{
   private cosU = 0; //
   private sinU = 0; //
   private _goodsPriceOnPlanet: number[] = [];
+  private _market: Equipment[] = [];
 
+
+  get market(): Equipment[] {
+    return this._market;
+  }
+
+  set market(value: Equipment[]) {
+    this._market = value;
+  }
 
   get goodsPriceOnPlanet(): number[] {
     return this._goodsPriceOnPlanet;
@@ -79,6 +89,9 @@ export class Orb extends Figure{
       this.lines.push(new Line(9, 10, color, width));
       this.lines.push(new Line(10, 11, color, width));
       this.lines.push(new Line(11, 8, color, width));
+    }
+    if (typeOrb === TypeOrb.BELT) {
+      this.name = 'Астероиды';
     }
   }
 

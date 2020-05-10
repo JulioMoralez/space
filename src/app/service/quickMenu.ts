@@ -3,7 +3,7 @@ import {Point} from './point';
 export class QuickMenu {
 
   private _point0: Point = new Point(0, 0);
-  private colors: string[] = ['red', 'green', 'blue', 'yellow'];
+  private colors: string[] = ['green', 'red', 'blue', 'yellow'];
   private startWidth = 5;
   private currentWidth = 5;
   private endWidth = 10;
@@ -75,6 +75,10 @@ export class QuickMenu {
   }
 
   reset(): number {
+    if (!this.click) {
+      return 0;
+    }
+    this.click = false;
     if (this.currentRadius < this.endRadius) {
       this.endAnimation = 2;
       this.currentRadius = this.endRadius;

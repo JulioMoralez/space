@@ -30,7 +30,7 @@ export enum Trade {
 }
 
 export enum Menu {
-  TARGET, STAT, INVENTORY, MAP, TRADE, HELP
+  TARGET, INVENTORY, MAP, TRADE, HELP
 }
 
 export class SearchField {
@@ -83,7 +83,6 @@ export class GameComponent implements OnInit {
   menu = Menu.TARGET;
   playerShip: Ship = null;
   public inventory: Equipment[] = [];
-  public market: Equipment[] = [];
   emptyEquipment: Equipment = new Equipment();
   public trade = Trade.NONE;
   public credits = 100;
@@ -103,6 +102,7 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     this.initGameObjects();
+    this.start();
   }
 
   start() {
@@ -131,6 +131,7 @@ export class GameComponent implements OnInit {
       }
       if ((this.playerShip.state === State.DOCK) && ((this.playerShip.onDock as Orb).goodsPriceOnPlanet.length === 0)) {
         this.createPriceGoods(this.playerShip.onDock as Orb);  // генерируем цены на товары при приземлении
+        this.createMarket(this.solars[this.currentSystem], this.playerShip.onDock as Orb); // генерируем товары на планете
       }
       if ((this.playerShip.state !== State.DOCK) && (this.playerShip.message.length > 0) && (this.playerShip.newMessage)) {
         this.sms(this.playerShip.message, this.playerShip.messageStyle);
@@ -202,7 +203,7 @@ export class GameComponent implements OnInit {
     // интерфейс меню
     this.ctx.beginPath();
     this.ctx.lineWidth = 3;
-    this.ctx.strokeStyle = 'orange';
+    this.ctx.strokeStyle = '#17a2b8';
     this.ctx.fillStyle = 'black';
     this.ctx.rect(this.maxAreaX - this.menuX, this.maxAreaY - this.menuY, this.maxAreaX, this.maxAreaY);
     this.ctx.fill();
@@ -214,7 +215,7 @@ export class GameComponent implements OnInit {
     const scaleY = this.maxAreaY - this.minimapXY + -100;
     const maxScale = this.menuX - 60;
     this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = 'orange';
+    this.ctx.strokeStyle = '#17a2b8';
     this.ctx.beginPath();
     this.ctx.rect(scaleX, scaleY, maxScale, 12);
     this.ctx.stroke();
@@ -258,7 +259,7 @@ export class GameComponent implements OnInit {
 
     // объекты на миникарте
     this.ctx.beginPath();
-    this.ctx.strokeStyle = 'orange';
+    this.ctx.strokeStyle = '#17a2b8';
     this.ctx.rect(this.maxAreaX  - this.menuX + this.borderMinimap,
                   this.maxAreaY  - this.minimapXY - this.borderMinimap, this.minimapXY , this.minimapXY);
     this.ctx.stroke();
@@ -315,9 +316,8 @@ export class GameComponent implements OnInit {
     this.solars[this.startSystem].figures.forEach(figure => {
       this.figures.push(figure);
     });
-    this.createMarket(this.solars[this.currentSystem]);
     this.scheduler = new Scheduler(this);
-
+    this.scheduler.generateNPC();
 
     this.playerShip = new Ship(1, new Point(100, 600), this.figures);
     this.playerShip.playerShip = true;
@@ -325,7 +325,7 @@ export class GameComponent implements OnInit {
     this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
     this.playerShip.fraction = Fraction.TRADER;
 
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 7; i++) { // генерируем все корабли для справки
       const ship = new Ship(i, new Point(i * this.helpFigureStep + this.helpPoint0.x,  this.helpPoint0.y), null);
       ship.logicRole = new LogicRole(Role.PLAYER, ship, this.maxMapX, this.maxMapY);
       this.helpFigures.push(ship);
@@ -347,13 +347,13 @@ export class GameComponent implements OnInit {
     // this.ship2.fraction = Fraction.POLICE;
   }
 
-  forward(speed: number) {
-    this.playerShip.forward(speed);
-  }
-
-  povorot(rot: number) {
-    this.playerShip.povorot(rot);
-  }
+  // forward(speed: number) {
+  //   this.playerShip.forward(speed);
+  // }
+  //
+  // povorot(rot: number) {
+  //   this.playerShip.povorot(rot);
+  // }
 
   mouseMove($event: MouseEvent) {
     switch ($event.button) {
@@ -409,17 +409,28 @@ export class GameComponent implements OnInit {
               this.quickMenu.point0.x - this.borderMap - figure.radius + this.point0.x,
               this.quickMenu.point0.y - this.borderMap - figure.radius + this.point0.y), figure.radius * 1.3)) {
               this.helpTarget = figure;
-              return; // если в режиме справки, то не обрабатываем кнопки быстрого меню
             }
           }
         }
         switch (this.quickMenu.reset()) {
           case 1: { // выбор
-            for (const figure of this.figures) {
+            let t: Figure = null;
+            for (const figure of this.figures) { // если на фоне например планеты находится корабль, то выбираем именно корабль
               if (figure.checkOnArea(this.quickMenu.point0.x, this.quickMenu.point0.y)) {
-                this.playerShip.target = figure;
-                break;
+                if (t === null) {
+                  t = figure;
+                } else {
+                  if (!(figure instanceof Orb)) { // если нашли помимо Orb
+                    if (figure.state !== State.DOCK) { // если объект не пристыкован
+                      t = figure;
+                      break;
+                    }
+                  }
+                }
               }
+            }
+            if (t !== null) { // если нашли новую цель, то заменяем
+              this.playerShip.target = t;
             }
             break;
           }
@@ -455,7 +466,7 @@ export class GameComponent implements OnInit {
         }
         break;
       }
-      case 2: {
+      case 2: { // правая кнопка мыши, перемещение, если не гиперпереход
         if (this.playerShip.state !== State.JUMP) {
           this.playerShip.chekpoints.push(new Point(x - this.point0.x, y - this.point0.y));
         }
@@ -546,7 +557,7 @@ export class GameComponent implements OnInit {
     this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
     this.figures.push(this.playerShip);
     this.currentSystem = this.starmap.target;
-    this.createMarket(this.solars[this.currentSystem]);
+    this.scheduler.generateNPC();
   }
 
   createPriceGoods(orb: Orb) { // считаем стоимость товаров на планете
@@ -555,24 +566,24 @@ export class GameComponent implements OnInit {
       orb.goodsPriceOnPlanet.push(value.calcPrice(this.solars[this.currentSystem].economy, this.solars[this.currentSystem].riches)));
   }
 
-  private createMarket(solar: Solar) {
-    this.market.length = 0;
+  private createMarket(solar: Solar, orb: Orb) {
+    orb.market.length = 0;
     for (let i = 0; i < 24; i++) {
-      this.market.push(this.emptyEquipment);
+      orb.market.push(this.emptyEquipment);
     }
     let level = 0;
     for (let i = 0; i < solar.riches.qtMarket; i++) {
       level = UtilService.getRandomInteger(0, solar.techLevel);
       switch (UtilService.getRandomInteger(0, 8)) {
-        case 0: this.market[i] = new Armor(level); break;
-        case 1: this.market[i] = new Capacitor(level); break;
-        case 2: this.market[i] = new Cargobay(level); break;
-        case 3: this.market[i] = new Fueltank(level); break;
-        case 4: this.market[i] = new Lasergun(level); break;
-        case 5: this.market[i] = new Rocketlauncher(level); break;
-        case 6: this.market[i] = new Shield(level); break;
-        case 7: this.market[i] = new Engine(level); break;
-        case 8: this.market[i] = new Container(level); break;
+        case 0: orb.market[i] = new Armor(level); break;
+        case 1: orb.market[i] = new Capacitor(level); break;
+        case 2: orb.market[i] = new Cargobay(level); break;
+        case 3: orb.market[i] = new Fueltank(level); break;
+        case 4: orb.market[i] = new Lasergun(level); break;
+        case 5: orb.market[i] = new Rocketlauncher(level); break;
+        case 6: orb.market[i] = new Shield(level); break;
+        case 7: orb.market[i] = new Engine(level); break;
+        case 8: orb.market[i] = new Container(level); break;
       }
     }
   }

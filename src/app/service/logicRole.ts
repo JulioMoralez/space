@@ -17,6 +17,8 @@ export class LogicRole {
   private timer = 0;
   private countOnPlanet = 0;
   private markPlanet: Figure[] = [];
+  private currentMine = 0;
+  private maxMine = 2;
 
 
   get oldRole(): Role {
@@ -110,7 +112,18 @@ export class LogicRole {
     return false;
   }
 
-  dockOnPlanet(del: number) {
+  private findBelt() {
+    for (const figure of this.ship.figures) {
+      if ((figure instanceof Orb) && ((figure as Orb).typeOrb === TypeOrb.BELT)) {
+        this.ship.target = figure;
+        this.ship.moveToTarget(State.IDLE);
+        this.stage++;
+        return true;
+      }
+    }
+  }
+
+  dockOnPlanet(del: number, allPlanet: boolean) {
     switch (this.countOnPlanet) {
       case 0: {
         if (this.ship.state === State.DOCK) {
@@ -132,7 +145,11 @@ export class LogicRole {
         this.ship.currentHp = this.ship.maxHp;
         this.ship.undock();
         this.countOnPlanet = 0;
-        this.stage--;
+        if (allPlanet) {  // если нужно посетить все планеты, то возвращвемся на шаг назад
+          this.stage--;
+        } else {
+          this.stage++;
+        }
         break;
       }
     }
@@ -176,7 +193,7 @@ export class LogicRole {
             break;
           }
           case 3: {
-            this.dockOnPlanet(100);
+            this.dockOnPlanet(100, true);
             break;
           }
           case 4: {
@@ -200,7 +217,7 @@ export class LogicRole {
             if (((this.ship.battleTarget !== null) && ((this.ship.battleTarget.state === State.DEAD) ||
               (this.ship.battleTarget.oldState === State.DEAD))) || (this.ship.battleTarget === null) ||
               (this.ship.battleTarget.state === State.DOCK) ||
-              (!UtilService.inRadius(this.ship.point0, this.ship.battleTarget.point0, 500))) { // если цель улетела
+              (!UtilService.inRadius(this.ship.point0, this.ship.battleTarget.point0, 600))) { // если цель улетела
               this.ship.battleTarget = null;
               this.ship.target = null;
               this.ship.battleMode = false;
@@ -218,7 +235,7 @@ export class LogicRole {
             break;
           }
           case 1: {
-            this.dockOnPlanet(100);
+            this.dockOnPlanet(100, true);
             break;
           }
           case 2: {
@@ -266,6 +283,57 @@ export class LogicRole {
         }
         break;
       }
+      case Role.MINER: {
+
+        switch (this.stage) {
+          case 0: {
+            this.findBelt();
+            this.currentMine = 0;
+            break;
+          }
+          case 1: {
+            if ((!this.ship.mine) && (this.ship.mineInRadius())) {
+              this.ship.doMine();
+              this.stage++;
+            }
+            break;
+          }
+          case 2: {
+            if (this.ship.currentMine === 0) {
+              this.currentMine++;
+            }
+            if (this.currentMine >= this.maxMine) {
+              this.stage++;
+            }
+            break;
+          }
+          case 3: {
+            this.markPlanet.length = 0;
+            this.findPlanet();
+            break;
+          }
+          case 4: {
+            this.dockOnPlanet(100, false);
+            break;
+          }
+          case 5: {
+            this.stage = 0;
+            break;
+          }
+        }
+      }
     }
+
+  }
+
+  toBattleMode(launcher: Figure) {
+    if ((this.role === Role.BATTLE) || (this.role === Role.PLAYER)) {
+      return;
+    }
+    if (this.role === Role.MINER) {
+      this.stage = 3; // сбегаем на ближайшую планету
+      return;
+    }
+    this.newRole(Role.BATTLE, launcher);
   }
 }

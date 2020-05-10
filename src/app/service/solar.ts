@@ -211,8 +211,9 @@ export class Solar {
       solars[i].color = 'hsl(' + (UtilService.rand(UtilService.randi + i + 3, 50) + 10) + ',100%,40%)';
     }
     for (let i = 0; i < num; i++) { // создание солнца в системе
-      solars[i]._figures.
-        push(new Orb(new Point(maxMapX / 2, maxMapY / 2), TypeOrb.SUN, solars[i]._radius * 25, solars[i]._color, 'yellow'));
+      sun = new Orb(new Point(maxMapX / 2, maxMapY / 2), TypeOrb.SUN, solars[i]._radius * 25, solars[i]._color, 'yellow');
+      sun.name = solars[i].name;
+      solars[i]._figures.push(sun);
     }
     UtilService.randi = 1;
     for (let i = 0; i < num; i++) { // тип экономики в системе
@@ -263,9 +264,7 @@ export class Solar {
       planet = new Orb(UtilService.getRandomPointBorderMap(maxMapX, maxMapY), TypeOrb.BELT, 150, '', '');
       solars[i]._figures.push(planet);
     }
-
-
-    console.log(solars);
+    // console.log(solars);
     return solars;
   }
 

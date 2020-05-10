@@ -15,8 +15,54 @@ import {LogicRole} from '../logicRole';
 import {Goods} from '../goods';
 import {Cont} from './cont';
 
-export enum Role {
-  PLAYER, PATRUL, BATTLE, TRADER, CONVOY, PIRATE, NONE, BORDER
+export class Role {
+  public static PLAYER = new Role();
+  public static PATRUL = new Role();
+  public static BATTLE = new Role();
+  public static TRADER = new Role();
+  public static CONVOY = new Role();
+  public static PIRATE = new Role();
+  public static NONE = new Role();
+  public static BORDER = new Role();
+  public static MINER = new Role();
+
+  private _maxShip = 0;
+  private _currentShip = 0;
+  private _reload = false;
+  private _currentCreateTimeout = 0;
+
+
+  get currentCreateTimeout(): number {
+    return this._currentCreateTimeout;
+  }
+
+  set currentCreateTimeout(value: number) {
+    this._currentCreateTimeout = value;
+  }
+
+  get reload(): boolean {
+    return this._reload;
+  }
+
+  set reload(value: boolean) {
+    this._reload = value;
+  }
+
+  get maxShip(): number {
+    return this._maxShip;
+  }
+
+  set maxShip(value: number) {
+    this._maxShip = value;
+  }
+
+  get currentShip(): number {
+    return this._currentShip;
+  }
+
+  set currentShip(value: number) {
+    this._currentShip = value;
+  }
 }
 
 export enum Fraction {
@@ -50,8 +96,8 @@ export class Ship extends Figure {
   private _logicRole: LogicRole;
   private _fraction: Fraction;
   private maxMine = 100;
-  private currentMine = 0;
-  private mine = false;
+  private _currentMine = 0;
+  private _mine = false;
   private mineTarget: Figure = null;
   private _goodsInBay: number[] = new Array(17).fill(0); // константное число количества товаров. Не хочу вводить сюда зависимость от Goods
   private _message = '';
@@ -60,8 +106,24 @@ export class Ship extends Figure {
   private take = false;
   private takeTarget: Figure = null;
   private _battleTarget: Figure = null;
-  private _takeRadius = this.radius * 7;
+  private _takeRadius = this.radius * 7; // радиус работы гравитационного луча
 
+
+  get currentMine(): number {
+    return this._currentMine;
+  }
+
+  set currentMine(value: number) {
+    this._currentMine = value;
+  }
+
+  get mine(): boolean {
+    return this._mine;
+  }
+
+  set mine(value: boolean) {
+    this._mine = value;
+  }
 
   get battleTarget(): Figure {
     return this._battleTarget;
@@ -555,14 +617,14 @@ export class Ship extends Figure {
         this._hyperjumpEnded = true;
       }
     }
-    if (this.mine) {
+    if ((this._mine) && (this.state !== State.DOCK)) {
       // шкала действий, копаем руду
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.fillStyle = '#0F0';
       ctx.strokeStyle = '#DDD';
       ctx.rect(this.point0.x - this.radius + point0.x, this.point0.y - this.radius * 1.7 - 12   + point0.y,
-        2 * this.radius * this.currentMine / this.maxMine, 5);
+        2 * this.radius * this._currentMine / this.maxMine, 5);
       ctx.stroke();
       ctx.fill();
     }
@@ -599,11 +661,11 @@ export class Ship extends Figure {
     // энергия
     t = (this.currentEnergy + this.maxAccEnergy > this.maxEnergy) ? this.maxEnergy : this.currentEnergy + this.maxAccEnergy;
     this.currentEnergy = t > 0 ? t : 0;
-    if (this.mine) {
+    if (this._mine) {
       if ((this.mineInRadius()) && (this.battleMode === false))  {
-        this.currentMine++;
-        if (this.currentMine > this.maxMine) {
-          this.currentMine = 0;
+        this._currentMine++;
+        if (this._currentMine > this.maxMine) {
+          this._currentMine = 0;
           if (this.currentVolume < this.maxVolume) {
             this.currentVolume++;
             this._goodsInBay[Goods.MINERALS.id]++;
@@ -613,9 +675,9 @@ export class Ship extends Figure {
           }
         }
       } else {
-        this.mine = false;
+        this._mine = false;
         this.mineTarget = null;
-        this.currentMine = 0;
+        this._currentMine = 0;
       }
     }
     if (this.take) {
@@ -660,9 +722,7 @@ export class Ship extends Figure {
   }
 
   toBattleMode(launcher: Figure) { // отвечаем атакующему
-    if ((this.logicRole.role !== Role.BATTLE) && (this.logicRole.role !== Role.PLAYER)) {
-      this.logicRole.newRole(Role.BATTLE, launcher);
-    }
+    this.logicRole.toBattleMode(launcher);
   }
 
   hyperjumpStartAnim() {
@@ -730,7 +790,7 @@ export class Ship extends Figure {
 
   doMine() {
     if (this.mineInRadius()) {
-      this.mine = true;
+      this._mine = true;
       this.mineTarget = this.target;
       this.sms('Начата добыча ресурсов', 0);
     } else {
@@ -741,7 +801,7 @@ export class Ship extends Figure {
 
   mineInRadius(): boolean { // проверка, находимся ли рядом с астероидами
     let t: Figure;
-    if (this.mine) { // если уже копаем, то контролируем имеено по этому объекту, откуда копаем
+    if (this._mine) { // если уже копаем, то контролируем имеено по этому объекту, откуда копаем
       t = this.mineTarget;
     } else {
       t = this.target;
@@ -785,6 +845,7 @@ export class Ship extends Figure {
 
   undock() {
     this.dockingTarget = null;
+    this.target = null;
     this.currentSpeed = this.maxSpeed;
     this.chekpoints.length = 0;
     for (const point of this.points) {
@@ -832,7 +893,7 @@ export class Ship extends Figure {
   allReset() { // сброс все текущих действий
     this.resetTarget();
     this.hyperjumpCancel();
-    this.mine = false;
+    this._mine = false;
     this.mineTarget = null;
     this.take = false;
     this.takeTarget = null;

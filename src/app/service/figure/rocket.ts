@@ -17,6 +17,7 @@ export class Rocket extends Weapon{
       this.maxHp = r.maxHp;
       this.maxSpeed = r.speed;
     }
+    this.name = 'Ракета';
     this.currentHp = this.maxHp;
     this.currentSpeed = 0;
     this.scale = 0.3;

@@ -4,11 +4,9 @@ import {Equip, Equipment} from '../service/equipment/equipment';
 import {Lasergun} from '../service/equipment/lasergun';
 import {Container} from '../service/equipment/container';
 import {Cargobay} from '../service/equipment/cargobay';
-import {Figure, State} from '../service/figure/figure';
-import {Orb, TypeOrb} from '../service/figure/orb';
-import {Cont} from '../service/figure/cont';
+import {State} from '../service/figure/figure';
+import {Orb} from '../service/figure/orb';
 import {UtilService} from '../service/util.service';
-import {Point} from '../service/point';
 
 
 @Component({
@@ -45,14 +43,7 @@ export class InventoryComponent implements OnInit {
     for (let i = 0; i < this.game.playerShip.maxCargo; i++) {
       this.game.inventory.push(this.game.emptyEquipment);
     }
-    this.game.inventory[0] = new Lasergun(3);
-    this.game.inventory[1] = new Lasergun(2);
-    this.game.inventory[2] = new Container(2);
-    this.game.inventory[3] = new Cargobay(1);
-    this.game.inventory[4] = new Cargobay(1);
-    this.game.inventory[5] = new Cargobay(1);
-    this.game.inventory[6] = new Cargobay(1);
-    this.game.inventory[7] = new Cargobay(1);
+    this.game.inventory[0] = new Container(2);
     this.game.playerShip.currentCargo = this.calcFullCargo();
   }
 
@@ -76,7 +67,7 @@ export class InventoryComponent implements OnInit {
   }
 
   getInfoFromMarket(i: number) {
-    this.equipment = this.game.market[i];
+    this.equipment = (this.game.playerShip.onDock as Orb).market[i];
     this.index = i;
     this.game.trade = Trade.MARKET;
     this.name = this.equipment.name;
@@ -182,10 +173,14 @@ export class InventoryComponent implements OnInit {
 
   sell() {
     let success = 0;
-    for (let i = 0; i < this.game.market.length ; i++) {
-      if (this.game.market[i] === this.game.emptyEquipment) {
+    if ((this.equipment.type === Equip.CONTAINER) && (this.game.playerShip.currentVolume > 0)) {
+      this.game.sms('Невозможно продать контейнер, освободите его', 1);
+      return;
+    }
+    for (let i = 0; i < (this.game.playerShip.onDock as Orb).market.length ; i++) {
+      if ((this.game.playerShip.onDock as Orb).market[i] === this.game.emptyEquipment) {
         this.game.sms('Предмет "' + this.equipment.name + '" продан за ' + this.equipment.price.toFixed(1) + ' кредитов', 0);
-        this.game.market[i] = this.equipment;
+        (this.game.playerShip.onDock as Orb).market[i] = this.equipment;
         this.game.credits += this.equipment.price;
         this.game.inventory[this.index] = this.game.emptyEquipment;
         this.equipment = null;
@@ -208,7 +203,7 @@ export class InventoryComponent implements OnInit {
           this.game.sms('Предмет "' + this.equipment.name + '" куплен за ' + this.equipment.price + ' кредитов', 0);
           this.game.inventory[i] = this.equipment;
           this.game.credits -= this.equipment.price;
-          this.game.market[this.index] = this.game.emptyEquipment;
+          (this.game.playerShip.onDock as Orb).market[this.index] = this.game.emptyEquipment;
           this.equipment = null;
           this.game.trade = Trade.NONE;
           success = 1;
@@ -226,11 +221,6 @@ export class InventoryComponent implements OnInit {
 
   viewTarget() {
     this.game.menu = Menu.TARGET;
-    this.game.messageWithRepeat = '';
-  }
-
-  viewStat() {
-    this.game.menu = Menu.STAT;
     this.game.messageWithRepeat = '';
   }
 
@@ -297,7 +287,6 @@ export class InventoryComponent implements OnInit {
 
   plusGoods(i: number, price: number) {
     if (this.game.playerShip.currentVolume < this.game.playerShip.maxVolume) {
-      console.log(this.game.goods[i]);
       if ((this.game.credits - price) >= 0) {
         this.game.playerShip.goodsInBay[i]++;
         this.game.playerShip.currentVolume++;
@@ -374,12 +363,16 @@ export class InventoryComponent implements OnInit {
 
   disableAttack(): boolean { // блокируем кнопку начала атаки
     if ((this.game.playerShip.target === null) || // нет цели
-      (!UtilService.inRadius(this.game.playerShip.point0, this.game.playerShip.target.point0, 500)) || // цель далеко
+      (!UtilService.inRadius(this.game.playerShip.point0, this.game.playerShip.target.point0, 600)) || // цель далеко
       (!this.game.isMayBattle(this.game.playerShip.target)) || // с целью нельзя сражаться
-      (this.game.playerShip.battleTarget === this.game.playerShip.target) || // уже сражаемся с целью
+      // (this.game.playerShip.battleTarget === this.game.playerShip.target) || // уже сражаемся с целью
       (this.game.playerShip.target === this.game.playerShip)) { // цель мы сами
       return true;
     }
     return false;
+  }
+
+  getMarket(): Equipment[] {
+    return (this.game.playerShip.onDock as Orb).market;
   }
 }

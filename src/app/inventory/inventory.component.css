@@ -9,7 +9,7 @@
   width: 175px;
 }
 .bs1 {
-  width: 175px;
+  width: 120px;
 }
 .bs2 {
   width: 50px;
@@ -23,6 +23,9 @@
 .hh2 {
   .btn: true;
   .btn-outline-info: true;
+}
+.statTable td{
+  padding-left: 10px;
 }
 /*.btn-outline-info{*/
 

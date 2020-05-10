@@ -20,6 +20,7 @@ export class Cont extends Figure{
 
   constructor(point0: Point, figures: Figure[], good: Goods, volume: number) {
     super(point0);
+    this.name = 'Контейнер';
     this.figures = figures;
     this._good = good;
     this._volume = volume;

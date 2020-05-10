@@ -44,6 +44,17 @@ export class Figure {
   private cycleRot = 0;
   private oldRot = 0;
   private _battleMode = false;
+  private oldSpeed = 0; // чисто для отобажения, для рабрты фильтра среднего значения скорости
+  private _viewCurrentSpeed = 0;
+
+
+  get viewCurrentSpeed(): number {
+    return this._viewCurrentSpeed;
+  }
+
+  set viewCurrentSpeed(value: number) {
+    this._viewCurrentSpeed = value;
+  }
 
   get battleMode(): boolean {
     return this._battleMode;
@@ -400,6 +411,7 @@ export class Figure {
   }
 
   moveToCheckpoint(maxMapX: number, maxMapY: number) {
+    this.oldSpeed = this.currentSpeed; // костыль для отображения
     if (this._state !== State.DOCK) { // если не пристыкованы, то двигаемся к цели
       let rot = 0 ;
       if (this._chekpoints.length > 0) {
@@ -505,6 +517,7 @@ export class Figure {
     } else {
       this._point0.setValue(this._onDock._point0); // двигаемся вместе с объектом, к которому пристыкованы
     }
+    this._viewCurrentSpeed = (this.currentSpeed + this.oldSpeed) / 2;
   }
 
   checkOnArea(x: number, y: number): boolean {
