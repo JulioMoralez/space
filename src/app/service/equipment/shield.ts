@@ -10,17 +10,17 @@ export class Shield extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 0: { this.maxShield = i + 1; this.accShield = 0.1; this.price = 1;  break; }
-      case 1: { this.maxShield = i + 100; this.accShield = i * 0; this.price = i * 10;  break; }
-      case 2: { this.maxShield = i + 300; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 3: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 4: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 5: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 6: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 7: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 8: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 9: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
-      case 10: { this.maxShield = i + 1; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 0: { this.maxShield = i * 10 + 10; this.accShield = 0.1; this.price = 1;  break; }
+      case 1: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 2: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 3: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 4: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 5: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 6: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 7: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 8: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 9: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
+      case 10: { this.maxShield = i * 10 + 50; this.accShield = i * 0.1; this.price = i * 10;  break; }
     }
     this.type = Equip.SHIELD;
     this.id = i;

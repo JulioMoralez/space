@@ -40,16 +40,16 @@ export class UtilService {
   static getRandomPointBorderMap(maxMapX: number, maxMapY: number): Point {
     switch (UtilService.getRandomInteger(0, 3)) {
       case 0: {
-        return new Point(300, UtilService.getRandomInteger(0, maxMapY));
+        return new Point(500, UtilService.getRandomInteger(0, maxMapY));
       }
       case 1: {
-        return new Point(maxMapX - 300, UtilService.getRandomInteger(0, maxMapY - 300));
+        return new Point(maxMapX - 500, UtilService.getRandomInteger(0, maxMapY - 500));
       }
       case 2: {
-        return new Point(UtilService.getRandomInteger(0, maxMapX), 300);
+        return new Point(UtilService.getRandomInteger(0, maxMapX), 500);
       }
       case 3: {
-        return new Point(UtilService.getRandomInteger(0, maxMapX - 300), maxMapY - 300);
+        return new Point(UtilService.getRandomInteger(0, maxMapX - 500), maxMapY - 500);
       }
     }
   }

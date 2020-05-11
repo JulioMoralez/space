@@ -71,7 +71,6 @@ export enum Fraction {
 
 export class Ship extends Figure {
 
-  private _playerShip = false;
   // private _equipments: Equipment[] = [];
   private _equipments = new Map();
   // hp из figure
@@ -241,14 +240,6 @@ export class Ship extends Figure {
     this._currentAccShield = value;
   }
 
-  get playerShip(): boolean {
-    return this._playerShip;
-  }
-
-  set playerShip(value: boolean) {
-    this._playerShip = value;
-  }
-
   get equipments(): Map<any, any> {
     return this._equipments;
   }
@@ -362,7 +353,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(5, 7, color, width));
         this.lines.push(new Line(5, 6, color, width));
         this.lines.push(new Line(6, 10, color, width));
-        this.chooseEquip(1, 1, 4, 1, 1, 1, 2, 5);
+        this.chooseEquip(3, 1, 4, 1, 2, 1, 3, 3);
         break;
       }
       case 2: {
@@ -405,7 +396,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(2, 3, color, width));
         this.lines.push(new Line(2, 6, color, width));
         this.lines.push(new Line(2, 7, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(6, 1, 1, 1, 3, 1, 4, 2);
         break;
       }
       case 3: {
@@ -433,7 +424,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(0, 6, color, width));
         this.lines.push(new Line(6, 4, color, width));
         this.lines.push(new Line(6, 5, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(2, 1, 1, 1, 2, 1, 2, 4);
         break;
       }
       case 4: {
@@ -473,7 +464,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(9, 0, color, width));
         this.lines.push(new Line(8, 6, color, width));
         this.lines.push(new Line(8, 0, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(4, 1, 1, 1, 3, 1, 4, 1);
         break;
       }
       case 5: {
@@ -505,7 +496,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(2, 1, color, width));
         this.lines.push(new Line(1, 3, color, width));
         this.lines.push(new Line(3, 6, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(9, 1, 1, 1, 1, 1, 2, 0);
         break;
       }case 6: {
         this.name = 'Krait';
@@ -539,7 +530,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(7, 8, color, width));
         this.lines.push(new Line(8, 9, color, width));
         this.lines.push(new Line(9, 6, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(3, 1, 1, 1, 4, 1, 3, 3);
         break;
       }
       case 7: {
@@ -583,7 +574,7 @@ export class Ship extends Figure {
         this.lines.push(new Line(14, 15, color, width));
         this.lines.push(new Line(15, 13, color, width));
         this.lines.push(new Line(13, 12, color, width));
-        this.chooseEquip(1, 1, 1, 1, 1, 1, 1, 1);
+        this.chooseEquip(3, 1, 1, 1, 2, 1, 3, 5);
         break;
       }
     }
@@ -628,7 +619,7 @@ export class Ship extends Figure {
       ctx.stroke();
       ctx.fill();
     }
-    if (this.take) { // если притягиваем контейнер к себеша
+    if (this.take) { // если притягиваем контейнер к себе
       if (this.takeTarget !== null) {
         ctx.beginPath();
         ctx.lineWidth = 3;
@@ -857,7 +848,7 @@ export class Ship extends Figure {
     this.onDock = null;
     this.currentShield = this.maxShield;
     this.state = State.IDLE;
-    this.message = '';
+    this.sms('В космосе', 0);
   }
 
   sms(message: string, style: number) {

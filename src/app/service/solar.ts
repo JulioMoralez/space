@@ -248,11 +248,10 @@ export class Solar {
         planet.setParent((sun as Orb),
           r,
           r,
-          UtilService.rand(UtilService.randi + i, 400) + 400,
+          UtilService.rand(UtilService.randi + i, 400) + 2000,
           3,
           UtilService.getRandomInteger(0, 10));
         planet.name = solars[i].name + ' ' + (j + 1);
-        // planet.createGoods(solars[i], goods); // заполняем товарами планеты
         solars[i]._figures.push(planet);
       }
     }

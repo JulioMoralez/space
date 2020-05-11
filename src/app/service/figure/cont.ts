@@ -63,15 +63,6 @@ export class Cont extends Figure{
   draw(ctx: CanvasRenderingContext2D, point0: Point) {
     super.draw(ctx, point0);
     this.povorot(1);
-    // this.lines.forEach(line => {
-    //   ctx.beginPath();
-    //   ctx.strokeStyle = line.color;
-    //   ctx.lineWidth = line.width;
-    //   ctx.moveTo(this.points[line.p1].x + point0.x, this.points[line.p1].y + point0.y);
-    //   ctx.lineTo(this.points[line.p2].x + point0.x, this.points[line.p2].y + point0.y);
-    //   ctx.stroke();
-    //   this.povorot(0.5);
-    // });
   }
 
   moveToFigure(figure: Figure) {

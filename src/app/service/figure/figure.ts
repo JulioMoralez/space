@@ -46,7 +46,15 @@ export class Figure {
   private _battleMode = false;
   private oldSpeed = 0; // чисто для отобажения, для рабрты фильтра среднего значения скорости
   private _viewCurrentSpeed = 0;
+  private _viewTargets = false;
 
+  get viewTargets(): boolean {
+    return this._viewTargets;
+  }
+
+  set viewTargets(value: boolean) {
+    this._viewTargets = value;
+  }
 
   get viewCurrentSpeed(): number {
     return this._viewCurrentSpeed;
@@ -290,31 +298,33 @@ export class Figure {
         ctx.stroke();
       });
       // рисуем маршрут
-      this._chekpoints.forEach(chekpoint => {
-        ctx.beginPath();
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = 'blue';
-        ctx.arc(chekpoint.x  + point0.x, chekpoint.y  + point0.y, 20,  0, 2 * Math.PI);
-        ctx.stroke();
-      });
-      // отмечаем выбранный объект
-      if (this._target !== null) { // остваить отображение цели только для игрока playerShip === true
-        ctx.beginPath();
-        ctx.lineWidth = this.currentTargetWidth;
-        ctx.strokeStyle = '#0F0';
-        for (let i = 0; i < 4; i++) {
+      if (this.viewTargets) {
+        this._chekpoints.forEach(chekpoint => {
           ctx.beginPath();
-          ctx.arc(this._target.point0.x  + point0.x, this._target.point0.y  + point0.y, this._target._radius + 10,
-            Math.PI * i / 2 + this.currentTargetRot,   Math.PI * i / 2  + Math.PI / 4  + this.currentTargetRot);
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = 'blue';
+          ctx.arc(chekpoint.x + point0.x, chekpoint.y + point0.y, 20, 0, 2 * Math.PI);
           ctx.stroke();
-        }
-        if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)){
-          this.deltaTargetWidth = -this.deltaTargetWidth;
-        }
-        this.currentTargetWidth += this.deltaTargetWidth;
-        this.currentTargetRot += 0.1;
-        if (this.currentTargetRot > 2 * Math.PI) {
-          this.currentTargetRot -= 2 * Math.PI;
+        });
+        // отмечаем выбранный объект
+        if (this._target !== null) { // остваить отображение цели только для игрока playerShip === true
+          ctx.beginPath();
+          ctx.lineWidth = this.currentTargetWidth;
+          ctx.strokeStyle = '#0F0';
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.arc(this._target.point0.x + point0.x, this._target.point0.y + point0.y, this._target._radius + 10,
+              Math.PI * i / 2 + this.currentTargetRot, Math.PI * i / 2 + Math.PI / 4 + this.currentTargetRot);
+            ctx.stroke();
+          }
+          if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)) {
+            this.deltaTargetWidth = -this.deltaTargetWidth;
+          }
+          this.currentTargetWidth += this.deltaTargetWidth;
+          this.currentTargetRot += 0.1;
+          if (this.currentTargetRot > 2 * Math.PI) {
+            this.currentTargetRot -= 2 * Math.PI;
+          }
         }
       }
       // хп
@@ -336,23 +346,25 @@ export class Figure {
       ctx.stroke();
       ctx.fill();
     } else {
-      // объект к которому пристыкованы
-      ctx.beginPath();
-      ctx.lineWidth = this.currentTargetWidth;
-      ctx.strokeStyle = '#F00';
-      for (let i = 0; i < 4; i++) {
+      if (this.viewTargets) {
+        // объект к которому пристыкованы
         ctx.beginPath();
-        ctx.arc(this._onDock.point0.x  + point0.x, this._onDock.point0.y  + point0.y, this._onDock._radius + 10,
-          Math.PI * i / 2 + this.currentTargetRot,   Math.PI * i / 2  + Math.PI / 4  + this.currentTargetRot);
-        ctx.stroke();
-      }
-      if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)){
-        this.deltaTargetWidth = -this.deltaTargetWidth;
-      }
-      this.currentTargetWidth += this.deltaTargetWidth;
-      this.currentTargetRot += 0.1;
-      if (this.currentTargetRot > 2 * Math.PI) {
-        this.currentTargetRot -= 2 * Math.PI;
+        ctx.lineWidth = this.currentTargetWidth;
+        ctx.strokeStyle = '#F00';
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath();
+          ctx.arc(this._onDock.point0.x  + point0.x, this._onDock.point0.y  + point0.y, this._onDock._radius + 10,
+            Math.PI * i / 2 + this.currentTargetRot,   Math.PI * i / 2  + Math.PI / 4  + this.currentTargetRot);
+          ctx.stroke();
+        }
+        if ((this.currentTargetWidth > this.maxTargetWidth) || (this.currentTargetWidth < this.minTargetWidth)){
+          this.deltaTargetWidth = -this.deltaTargetWidth;
+        }
+        this.currentTargetWidth += this.deltaTargetWidth;
+        this.currentTargetRot += 0.1;
+        if (this.currentTargetRot > 2 * Math.PI) {
+          this.currentTargetRot -= 2 * Math.PI;
+        }
       }
     }
   }

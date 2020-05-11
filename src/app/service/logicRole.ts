@@ -79,9 +79,14 @@ export class LogicRole {
   returnRole() {
     this._role = this._oldRole;
     switch (this._role) {
-      case Role.PATRUL: { // возвращаемся в режим патрулирования, сначала детим на планету
+      case Role.PATRUL: { // возвращаемся в режим патрулирования, сначала летим на планету
         this.ship.chekpoints.length = 0;
         this.stage = 2;
+        break;
+      }
+      case Role.PIRATE: {
+        this.ship.chekpoints.length = 0;
+        this.stage = 0;
         break;
       }
     }
@@ -112,11 +117,23 @@ export class LogicRole {
     return false;
   }
 
-  private findBelt() {
+  private findOrb(typeOrb: TypeOrb) {
     for (const figure of this.ship.figures) {
-      if ((figure instanceof Orb) && ((figure as Orb).typeOrb === TypeOrb.BELT)) {
+      if ((figure instanceof Orb) && ((figure as Orb).typeOrb === typeOrb)) {
         this.ship.target = figure;
         this.ship.moveToTarget(State.IDLE);
+        this.stage++;
+        return true;
+      }
+    }
+  }
+
+  private dockStantion() {
+    for (const figure of this.ship.figures) {
+      if ((figure instanceof Orb) && ((figure as Orb).typeOrb === TypeOrb.STATION)) {
+        this.ship.target = figure;
+        this.ship.dockingTarget = figure;
+        this.ship.moveToTarget(State.DOCKING);
         this.stage++;
         return true;
       }
@@ -175,10 +192,10 @@ export class LogicRole {
         switch (this.stage) {
           case 0: {
             this.ship.chekpoints.length = 0;
-            this.ship.chekpoints.push(new Point(200, 200));
-            this.ship.chekpoints.push(new Point(200, this.maxMapY - 200));
-            this.ship.chekpoints.push(new Point(this.maxMapX - 200, this.maxMapY - 200));
-            this.ship.chekpoints.push(new Point(this.maxMapX - 200, 200));
+            this.ship.chekpoints.push(new Point(400, 400));
+            this.ship.chekpoints.push(new Point(400, this.maxMapY - 400));
+            this.ship.chekpoints.push(new Point(this.maxMapX - 400, this.maxMapY - 400));
+            this.ship.chekpoints.push(new Point(this.maxMapX - 400, 400));
             this.stage++;
             break;
           }
@@ -276,8 +293,16 @@ export class LogicRole {
           }
           case 1: {
             if (this.ship.chekpoints.length === 0) {
-              this.stage = 0;
+              this.dockStantion();
             }
+            break;
+          }
+          case 2: {
+            this.dockOnPlanet(100, false);
+            break;
+          }
+          case 3: {
+            this.stage = 0;
             break;
           }
         }
@@ -287,7 +312,7 @@ export class LogicRole {
 
         switch (this.stage) {
           case 0: {
-            this.findBelt();
+            this.findOrb(TypeOrb.BELT);
             this.currentMine = 0;
             break;
           }

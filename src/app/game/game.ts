@@ -59,8 +59,8 @@ export class GameComponent implements OnInit {
   currentSystem = this.startSystem;
   maxAreaX = 1300;
   maxAreaY = 920;
-  maxMapX = this.maxAreaX * 2;
-  maxMapY = this.maxAreaY * 2;
+  maxMapX = this.maxAreaX * 3;
+  maxMapY = this.maxAreaY * 3;
   borderMap = 50; // толщина границы карты
   menuX = 300;
   menuY = 400;
@@ -289,6 +289,9 @@ export class GameComponent implements OnInit {
   }
 
   drawOnMiniMap(figure: Figure) {
+    if (figure instanceof Cont) { // не рисуем контейнеры на миникарте
+      return;
+    }
     const x = figure.point0.x * this.minimapXY / this.maxMapX + this.maxAreaX  - this.menuX + this.borderMinimap - 2;
     const y = figure.point0.y * this.minimapXY / this.maxMapY + this.maxAreaY - this.minimapXY - this.borderMinimap - 2;
     if ((x > (this.maxAreaX - this.menuX + this.borderMinimap - 2)) &&
@@ -296,7 +299,11 @@ export class GameComponent implements OnInit {
         (y > (this.maxAreaY - this.minimapXY - this.borderMinimap)) &&
         (y < (this.maxAreaY - this.borderMinimap))) {
       this.ctx.beginPath();
-      this.ctx.fillStyle = 'yellow';
+      if (figure instanceof Orb) {
+        this.ctx.fillStyle = 'red';
+      } else {
+        this.ctx.fillStyle = 'yellow';
+      }
       this.ctx.fillRect(x, y, 4 , 4);
       this.ctx.fill();
     }
@@ -320,7 +327,7 @@ export class GameComponent implements OnInit {
     this.scheduler.generateNPC();
 
     this.playerShip = new Ship(1, new Point(100, 600), this.figures);
-    this.playerShip.playerShip = true;
+    this.playerShip.viewTargets = true;
     this.figures.push(this.playerShip);
     this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
     this.playerShip.fraction = Fraction.TRADER;

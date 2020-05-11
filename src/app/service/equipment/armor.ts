@@ -8,17 +8,17 @@ export class Armor extends Equipment {
   constructor(i: number) {
     super();
     switch (i) {
-      case 0: {   this.maxHp = i + 1;   this.price = 1;   break; }
-      case 1: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 2: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 3: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 4: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 5: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 6: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 7: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 8: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 9: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
-      case 10: {   this.maxHp = i + 1;   this.price = i * 10;   break; }
+      case 0: {   this.maxHp = i * 10 + 20;   this.price = 1;   break; }
+      case 1: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 2: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 3: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 4: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 5: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 6: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 7: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 8: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 9: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
+      case 10: {   this.maxHp = i * 10 + 20;   this.price = i * 10;   break; }
     }
     this.type = Equip.ARMOR;
     this.id = i;

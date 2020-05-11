@@ -21,10 +21,11 @@ export class Scheduler {
       switch (value) {
         case Role.PATRUL: {
           if (level < 5) {
-            value.maxShip = 1;
-          } else {
             value.reload = true;
             value.maxShip = 2;
+          } else {
+            value.reload = true;
+            value.maxShip = 3;
           }
           break;
         }
@@ -36,13 +37,15 @@ export class Scheduler {
         case Role.PIRATE: {
           if (level < 5) {
             value.reload = true;
-            value.maxShip = 2;
+            value.maxShip = 3;
           } else {
-            value.maxShip = 1;
+            value.reload = true;
+            value.maxShip = 2;
           }
           break;
         }
         case Role.MINER: {
+          value.reload = true;
           value.maxShip = 1;
           break;
         }
@@ -79,7 +82,7 @@ export class Scheduler {
   private createShip(value: Role) {
     switch (value) {
       case Role.PATRUL: {
-        const ship = new Ship(3,
+        const ship = new Ship(UtilService.getRandomInteger(2, 4),
           UtilService.getRandomPointIntoMap(this.game.maxMapX, this.game.maxMapY), this.game.figures);
         ship.logicRole = new LogicRole(Role.PATRUL, ship, this.game.maxMapX, this.game.maxMapY);
         ship.fraction = Fraction.POLICE;

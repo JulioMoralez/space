@@ -9,17 +9,17 @@ export class Capacitor extends Equipment{
   constructor(i: number) {
     super();
     switch (i) {
-      case 0: {   this.maxEnergy = i + 1;   this.accEnergy = 0.05;    this.price = 1;    break; }
-      case 1: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.3;    this.price = i * 10;    break; }
-      case 2: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 3: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 4: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 5: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 6: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 7: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 8: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 9: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
-      case 10: {   this.maxEnergy = i + 1;   this.accEnergy = i * 0.01;    this.price = i * 10;    break; }
+      case 0: {   this.maxEnergy = 3;   this.accEnergy = 0.1;    this.price = 1;    break; }
+      case 1: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 2: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 3: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 4: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 5: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 6: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 7: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 8: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 9: {   this.maxEnergy = i  / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
+      case 10: {   this.maxEnergy = i / 2 + 2;   this.accEnergy = i / 10 + 0.2;    this.price = i * 10;    break; }
     }
     this.type = Equip.CAPACITOR;
     this.id = i;
