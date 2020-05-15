@@ -24,7 +24,7 @@ export class Fueltank extends Equipment {
     this.id = i;
     this.label = i === 10 ? 'FX' :  'F' + i;
     this.name = 'Топливный бак ' + i;
-    this.info.push('Объём бака: ' + this.maxFuel);
+    this.info.push('Объём бака: ' + this.maxFuel.toFixed(1));
   }
 
   install(ship: Ship, effect: number) {

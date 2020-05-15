@@ -25,8 +25,8 @@ export class Engine extends Equipment{
     this.id = i;
     this.label = i === 10 ? 'EX' :  'E' + i;
     this.name = 'Двигатель ' + i;
-    this.info.push('Максимальная скорость: ' + this.maxSpeed);
-    this.info.push('Ускорение: ' + this.accSpeed);
+    this.info.push('Максимальная скорость: ' + this.maxSpeed.toFixed(1));
+    this.info.push('Ускорение: ' + this.accSpeed.toFixed(1));
   }
 
   install(ship: Ship, effect: number) {

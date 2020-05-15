@@ -26,7 +26,7 @@ export class Shield extends Equipment{
     this.id = i;
     this.label = i === 10 ? 'SX' :  'S' + i;
     this.name = 'Щит ' + i;
-    this.info.push('Объём щита: ' + this.maxShield);
+    this.info.push('Объём щита: ' + this.maxShield.toFixed(1));
     this.info.push('Восстановление: ' + this.accShield.toFixed(1));
   }
 

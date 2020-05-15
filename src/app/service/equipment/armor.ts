@@ -24,7 +24,7 @@ export class Armor extends Equipment {
     this.id = i;
     this.label = i === 10 ? 'AX' : 'A' + i;
     this.name = 'Броня ' + i;
-    this.info.push('Объём брони: ' + this.maxHp);
+    this.info.push('Объём брони: ' + this.maxHp.toFixed(1));
   }
 
   install(ship: Ship, effect: number) {

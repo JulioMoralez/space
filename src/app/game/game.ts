@@ -304,6 +304,9 @@ export class GameComponent implements OnInit {
       } else {
         this.ctx.fillStyle = 'yellow';
       }
+      if (figure === this.playerShip) {
+        this.ctx.fillStyle = 'green';
+      }
       this.ctx.fillRect(x, y, 4 , 4);
       this.ctx.fill();
     }

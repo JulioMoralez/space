@@ -348,7 +348,6 @@ export class LogicRole {
         }
       }
     }
-
   }
 
   toBattleMode(launcher: Figure) {
@@ -356,7 +355,9 @@ export class LogicRole {
       return;
     }
     if (this.role === Role.MINER) {
-      this.stage = 3; // сбегаем на ближайшую планету
+      if (this.stage !== 4) {
+        this.stage = 3; // сбегаем на ближайшую планету
+      }
       return;
     }
     this.newRole(Role.BATTLE, launcher);
