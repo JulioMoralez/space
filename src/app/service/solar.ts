@@ -252,14 +252,16 @@ export class Solar {
           3,
           UtilService.getRandomInteger(0, 10));
         planet.name = solars[i].name + ' ' + (j + 1);
+        planet.id = j + 1;
         solars[i]._figures.push(planet);
       }
     }
     for (let i = 0; i < num; i++) { // добавляем станцию
       planet = new Orb(UtilService.getRandomPointBorderMap(maxMapX, maxMapY), TypeOrb.STATION, 150, '', '');
+      planet.id = 0;
       solars[i]._figures.push(planet);
     }
-    for (let i = 0; i < num; i++) { // добавляем станцию
+    for (let i = 0; i < num; i++) { // добавляем астероиды
       planet = new Orb(UtilService.getRandomPointBorderMap(maxMapX, maxMapY), TypeOrb.BELT, 150, '', '');
       solars[i]._figures.push(planet);
     }

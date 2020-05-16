@@ -7,6 +7,8 @@ import {Cargobay} from '../service/equipment/cargobay';
 import {State} from '../service/figure/figure';
 import {Orb} from '../service/figure/orb';
 import {UtilService} from '../service/util.service';
+import {User} from '../service/user.service';
+import {isNumber} from 'util';
 
 
 @Component({
@@ -31,28 +33,25 @@ export class InventoryComponent implements OnInit {
   bstyle1 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs1';
   bstyle2 = 'btn btn-outline-info my-2 my-sm-0 mx-1 bs2';
   bstyle3 = 'btn btn-outline-info bs3';
+  regLabelStyle = 'col-sm-4 col-form-label col-form-label-sm';
+  regEditStyle = 'col-md-8 mb-3';
+  regButtonStyle = 'btn btn-info my-2 col-sm-12';
   private oldCargo: number;
   priceArmor = 1;
   priceFuel = 2;
   priceRocket = 10;
+  username = '';
+  password = '';
+  confirmPassword = '';
 
 
   constructor(public game: GameComponent) { }
 
   ngOnInit(): void {
-    for (let i = 0; i < this.game.playerShip.maxCargo; i++) {
-      this.game.inventory.push(this.game.emptyEquipment);
-    }
-    this.game.inventory[0] = new Container(2);
-    this.game.playerShip.currentCargo = this.calcFullCargo();
+
   }
 
-  calcFullCargo(): number{
-    let vol = 0;
-    this.game.inventory.filter(value => value.type === Equip.CONTAINER).forEach(value => vol += (value as Container).volume);
-    this.game.playerShip.maxVolume = vol;
-    return this.game.inventory.filter(value => value !== this.game.emptyEquipment).length;
-  }
+
 
   getInfo(i: number) {
     if (this.game.playerShip.equipments.has(i)) {
@@ -107,7 +106,7 @@ export class InventoryComponent implements OnInit {
     if (success === 0) {
       this.game.sms('Недостаточно свободного места на корабле', 1);
     }
-    this.game.playerShip.currentCargo = this.calcFullCargo();
+    this.game.playerShip.currentCargo = this.game.calcFullCargo();
   }
 
   getInfoFromInv(i: number) {
@@ -144,7 +143,7 @@ export class InventoryComponent implements OnInit {
       }
     }
     this.game.trade = Trade.NONE;
-    this.game.playerShip.currentCargo = this.calcFullCargo();
+    this.game.playerShip.currentCargo = this.game.calcFullCargo();
   }
 
   recalcCargo(): boolean { // false - нет места разместить весь груз
@@ -192,7 +191,7 @@ export class InventoryComponent implements OnInit {
     if (success === 0) {
       this.game.sms('Недостаточно свободного места в магазине', 1);
     }
-    this.game.playerShip.currentCargo = this.calcFullCargo();
+    this.game.playerShip.currentCargo = this.game.calcFullCargo();
   }
 
   buy() {
@@ -216,7 +215,7 @@ export class InventoryComponent implements OnInit {
     } else {
       this.game.sms('Недостаточно кредитов', 1);
     }
-    this.game.playerShip.currentCargo = this.calcFullCargo();
+    this.game.playerShip.currentCargo = this.game.calcFullCargo();
   }
 
   viewTarget() {
@@ -283,6 +282,14 @@ export class InventoryComponent implements OnInit {
 
   menuButton2(): string {
     return 'btn btn-outline-info my-2 my-sm-0 mx-1 bs0';
+  }
+
+  editstyle1(): string {
+    return 'form-control mr-sm-2 is-invalid';
+  }
+
+  editstyle2(): string {
+    return 'form-control mr-sm-2';
   }
 
   plusGoods(i: number, price: number) {
@@ -374,5 +381,47 @@ export class InventoryComponent implements OnInit {
 
   getMarket(): Equipment[] {
     return (this.game.playerShip.onDock as Orb).market;
+  }
+
+  register() {
+    if (!(this.username.trim().length)) {
+      this.game.userService.message = 'Введите логин';
+      this.game.userService.messageStyle = this.game.userService.messageDanger;
+      return;
+    }
+    this.game.userService.getEs().subscribe(value => {
+      this.game.users = value;
+      if (this.game.users.find(value1 => value1.username === this.username) !== undefined) {
+        this.game.userService.message = 'Пользователь существует';
+        this.game.userService.messageStyle = this.game.userService.messageDanger;
+        return;
+      }
+      if (!(this.password.trim().length)) {
+        this.game.userService.message = 'Введите пароль';
+        this.game.userService.messageStyle = this.game.userService.messageDanger;
+        return;
+      }
+      if (this.password.trim() !== this.confirmPassword.trim()) {
+        this.game.userService.message = 'Пароли не совпадают';
+        this.game.userService.messageStyle = this.game.userService.messageDanger;
+        return;
+      }
+      // this.errorMessage = null;
+      const user: User = {id: null, username: this.username, password: this.password};
+      this.game.userService.addOrUpdate(user).subscribe(value1 => {
+        if (isNumber(value1.id)) {
+          this.game.users.push(value1);
+          this.game.userService.message = 'Регистрация успешна, ' + value1.username;
+          this.game.userService.messageStyle = this.game.userService.messageSuccess;
+        }
+      });
+    });
+  }
+
+  logout() {
+    this.username = '';
+    this.password = '';
+    this.confirmPassword = '';
+    this.game.logout();
   }
 }

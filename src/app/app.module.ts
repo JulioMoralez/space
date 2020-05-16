@@ -7,6 +7,7 @@ import { GameComponent } from './game/game';
 import {RouterModule, Routes} from '@angular/router';
 import { InventoryComponent } from './inventory/inventory.component';
 import {FormsModule} from '@angular/forms';
+import {HttpClientModule} from '@angular/common/http';
 
 const appRoutes: Routes = [
   { path: '', component: GameComponent},
@@ -24,6 +25,7 @@ const appRoutes: Routes = [
     imports: [
         BrowserModule,
         RouterModule.forRoot(appRoutes),
+        HttpClientModule,
         FormsModule
     ],
   providers: [],

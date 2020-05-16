@@ -22,7 +22,16 @@ export class Orb extends Figure{
   private sinU = 0; //
   private _goodsPriceOnPlanet: number[] = [];
   private _market: Equipment[] = [];
+  private _id = -1;
 
+
+  get id(): number {
+    return this._id;
+  }
+
+  set id(value: number) {
+    this._id = value;
+  }
 
   get market(): Equipment[] {
     return this._market;

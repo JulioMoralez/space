@@ -7,7 +7,7 @@ import {Point} from '../service/point';
 import {Joy} from '../service/joy';
 import {Fraction, Role, Ship} from '../service/figure/ship';
 import {QuickMenu} from '../service/quickMenu';
-import {Equipment} from '../service/equipment/equipment';
+import {Equip, Equipment} from '../service/equipment/equipment';
 import {Starmap} from '../service/starmap';
 import {Solar} from '../service/solar';
 import {Goods} from '../service/goods';
@@ -24,6 +24,8 @@ import {LogicRole} from '../service/logicRole';
 import {Scheduler} from '../service/scheduler';
 import {Orb, TypeOrb} from '../service/figure/orb';
 import {Cont} from '../service/figure/cont';
+import {User, UserService} from '../service/user.service';
+import {GameDTO, GameService} from '../service/game.service';
 
 export enum Trade {
   NONE, SHIP, INVENTORY, MARKET
@@ -45,7 +47,7 @@ export class SearchField {
 })
 export class GameComponent implements OnInit {
 
-  constructor() { }
+  constructor(public userService: UserService, public gameService: GameService) { }
 
   @ViewChild('canvas123', { static: true })
   canvas: ElementRef<HTMLCanvasElement>;
@@ -99,8 +101,19 @@ export class GameComponent implements OnInit {
   messageRepeatCount = 0;
   messageSuccess = 'alert alert-success';
   messageDanger = 'alert alert-danger';
+  users: User[];
 
   ngOnInit(): void {
+    this.userService.getEs().subscribe(value => {
+      this.users = value;
+    });
+    const id = sessionStorage.getItem('id');
+    if (id !== null) {
+      this.userService.getE(id.toString()).subscribe(value => {
+        this.userService.user = value;
+        this.newGame();
+      });
+    }
     this.initGameObjects();
     this.start();
   }
@@ -126,16 +139,22 @@ export class GameComponent implements OnInit {
         figure.moveToCheckpoint(this.maxMapX, this.maxMapY);
         figure.moveOnEllipse();
       }
-      if (this.playerShip.hyperjumpEnded === true) {  // ждём окончания анимации гиперперехода и выполняем его, костыль конечно здесь это
-        this.hyperjump();
-      }
-      if ((this.playerShip.state === State.DOCK) && ((this.playerShip.onDock as Orb).goodsPriceOnPlanet.length === 0)) {
-        this.createPriceGoods(this.playerShip.onDock as Orb);  // генерируем цены на товары при приземлении
-        this.createMarket(this.solars[this.currentSystem], this.playerShip.onDock as Orb); // генерируем товары на планете
-      }
-      if ((this.playerShip.state !== State.DOCK) && (this.playerShip.message.length > 0) && (this.playerShip.newMessage)) {
-        this.sms(this.playerShip.message, this.playerShip.messageStyle);
-        this.playerShip.newMessage = false;
+      if (this.playerShip !== null) {
+        if (this.playerShip.hyperjumpEnded === true) {  // ждём окончания анимации гиперперехода и выполняем его, костыль конечно здесь это
+          this.hyperjump();
+        }
+        if ((this.playerShip.state === State.DOCK) && ((this.playerShip.onDock as Orb).goodsPriceOnPlanet.length === 0)) {
+          this.createPriceGoods(this.playerShip.onDock as Orb);  // генерируем цены на товары при приземлении
+          this.createMarket(this.solars[this.currentSystem], this.playerShip.onDock as Orb); // генерируем товары на планете
+          this.saveGame();
+        }
+        if ((this.playerShip.state !== State.DOCK) && (this.playerShip.message.length > 0) && (this.playerShip.newMessage)) {
+          this.sms(this.playerShip.message, this.playerShip.messageStyle);
+          this.playerShip.newMessage = false;
+        }
+        if (this.playerShip.state === State.DEAD) {
+          this.rebirth();
+        }
       }
       this.scheduler.schedule();
       this.refreshCanvas();
@@ -225,24 +244,26 @@ export class GameComponent implements OnInit {
     this.ctx.beginPath();
     this.ctx.rect(scaleX, scaleY + 40, maxScale, 12);
     this.ctx.stroke();
-    this.ctx.beginPath();
-    this.ctx.fillStyle = 'yellow';
-    this.ctx.rect(scaleX, scaleY, maxScale * this.playerShip.currentEnergy / this.playerShip.maxEnergy, 12);
-    this.ctx.fill();
-    this.ctx.beginPath();
-    this.ctx.rect(scaleX, scaleY + 20, maxScale * this.playerShip.currentShield / this.playerShip.maxShield, 12);
-    this.ctx.fillStyle = '#00F';
-    this.ctx.fill();
-    this.ctx.beginPath();
-    this.ctx.rect(scaleX, scaleY + 40, maxScale * this.playerShip.currentHp / this.playerShip.maxHp, 12);
-    this.ctx.fillStyle = '#F00';
-    this.ctx.fill();
-    // ракеты в запасе
-    for (let i = 0; i < this.playerShip.currentRocket; i++) {
+    if (this.playerShip !== null) {
       this.ctx.beginPath();
-      this.ctx.rect(scaleX + i * 20, scaleY + 60, 12, 12);
+      this.ctx.fillStyle = 'yellow';
+      this.ctx.rect(scaleX, scaleY, maxScale * this.playerShip.currentEnergy / this.playerShip.maxEnergy, 12);
+      this.ctx.fill();
+      this.ctx.beginPath();
+      this.ctx.rect(scaleX, scaleY + 20, maxScale * this.playerShip.currentShield / this.playerShip.maxShield, 12);
       this.ctx.fillStyle = '#00F';
       this.ctx.fill();
+      this.ctx.beginPath();
+      this.ctx.rect(scaleX, scaleY + 40, maxScale * this.playerShip.currentHp / this.playerShip.maxHp, 12);
+      this.ctx.fillStyle = '#F00';
+      this.ctx.fill();
+      // ракеты в запасе
+      for (let i = 0; i < this.playerShip.currentRocket; i++) {
+        this.ctx.beginPath();
+        this.ctx.rect(scaleX + i * 20, scaleY + 60, 12, 12);
+        this.ctx.fillStyle = '#00F';
+        this.ctx.fill();
+      }
     }
 
 
@@ -323,17 +344,11 @@ export class GameComponent implements OnInit {
     this.solars = Solar.generate(256, this.maxMapX, this.maxMapY, this.maxStarmapX, this.maxStarmapY, this.goods);
     this.starmap =
       new Starmap(this.maxStarmapX, this.maxStarmapY, this.borderMap, this.solars, this.currentSystem);
-    this.solars[this.startSystem].figures.forEach(figure => {
-      this.figures.push(figure);
-    });
+    // this.solars[this.startSystem].figures.forEach(figure => {
+    //   this.figures.push(figure);
+    // });
     this.scheduler = new Scheduler(this);
-    this.scheduler.generateNPC();
-
-    this.playerShip = new Ship(1, new Point(100, 600), this.figures);
-    this.playerShip.viewTargets = true;
-    this.figures.push(this.playerShip);
-    this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
-    this.playerShip.fraction = Fraction.TRADER;
+    this.loadSolar();
 
     for (let i = 1; i <= 7; i++) { // генерируем все корабли для справки
       const ship = new Ship(i, new Point(i * this.helpFigureStep + this.helpPoint0.x,  this.helpPoint0.y), null);
@@ -392,6 +407,9 @@ export class GameComponent implements OnInit {
           if (this.menu === Menu.MAP) {
             this.starmap.start(x, y);
           } else {
+            if (this.playerShip === null) {
+              return;
+            }
             if (((x < this.maxAreaX) && (y < this.maxAreaY - this.menuY)) ||
               ((x < this.maxAreaX - this.menuX) && (y > this.maxAreaY - this.menuY))) {
               this.quickMenu.start(x, y, this.point0);
@@ -412,6 +430,9 @@ export class GameComponent implements OnInit {
     switch ($event.button) {
       case 0: {
         this.joy.reset();
+        if (this.playerShip === null) {
+          return;
+        }
         this.starmap.reset();
         if (this.menu === Menu.HELP) {
           for (const figure of this.helpFigures) { // выделяем корабль в режиме справки
@@ -477,6 +498,9 @@ export class GameComponent implements OnInit {
         break;
       }
       case 2: { // правая кнопка мыши, перемещение, если не гиперпереход
+        if (this.playerShip === null) {
+          return;
+        }
         if (this.playerShip.state !== State.JUMP) {
           this.playerShip.chekpoints.push(new Point(x - this.point0.x, y - this.point0.y));
         }
@@ -526,6 +550,7 @@ export class GameComponent implements OnInit {
 
   undock() {
     this.playerShip.undock();
+    this.saveGame();
   }
 
   mine() {
@@ -563,10 +588,18 @@ export class GameComponent implements OnInit {
 
   hyperjump() {
     this.playerShip.hyperjump(this.starmap.hyperjumpDistance, this.point0, this.maxAreaX, this.maxAreaY, this.maxMapX, this.maxMapY);
-    this.figures.length = 0;  // очищаем текущий  массив объектов
-    this.solars[this.starmap.target].figures.forEach(figure => this.figures.push(figure));
-    this.figures.push(this.playerShip);
     this.currentSystem = this.starmap.target;
+    this.saveGame();
+    this.loadSolar();
+  }
+
+  loadSolar() {
+    this.figures.length = 0;  // очищаем текущий  массив объектов
+    this.solars[this.currentSystem].figures.forEach(figure => this.figures.push(figure));
+    this.starmap.target = this.currentSystem;
+    if (this.playerShip !== null) {
+      this.figures.push(this.playerShip);
+    }
     this.scheduler.generateNPC();
   }
 
@@ -614,4 +647,229 @@ export class GameComponent implements OnInit {
     this.playerShip.battleTarget = null;
     this.playerShip.battleMode = false;
   }
+
+  calcFullCargo(): number{
+    let vol = 0;
+    this.inventory.filter(value => value.type === Equip.CONTAINER).forEach(value => vol += (value as Container).volume);
+    this.playerShip.maxVolume = vol;
+    return this.inventory.filter(value => value !== this.emptyEquipment).length;
+  }
+
+  newGame() {
+    this.gameService.getEs().subscribe(games => {
+      this.playerShip = new Ship(1, new Point(0, 0), this.figures);
+      this.playerShip.viewTargets = true;
+      this.playerShip.logicRole = new LogicRole(Role.PLAYER, this.playerShip, this.maxMapX, this.maxMapY);
+      this.playerShip.fraction = Fraction.TRADER;
+
+      const currentGames = games.filter(value => ((value.user !== null) && (value.user.id === this.userService.user.id)));
+      if ((currentGames !== null) && (currentGames.length > 0)) {
+        this.gameService.gameDTO = currentGames[0];
+      } else {
+        this.gameService.gameDTO = new GameDTO(null,
+          1000,
+          this.playerShip.currentHp * 10,
+          this.playerShip.currentFuel * 10,
+           this.playerShip.currentRocket,
+           this.startSystem,
+          0,
+          '',
+          '',
+          '',
+          this.userService.user);
+      }
+      if ((this.gameService.gameDTO.goods !== null) && (this.gameService.gameDTO.goods.length > 0)) {
+        this.playerShip.goodsInBay = this.gameService.gameDTO.goods.split(',').map(value => parseInt(value, 10));
+        this.playerShip.currentVolume = this.playerShip.goodsInBay.reduce((acc, cur) => acc + cur);
+      }
+      if ((this.gameService.gameDTO.equip !== null) && (this.gameService.gameDTO.equip.length > 0)) {
+        this.playerShip.equipments.forEach(value => {
+          value.install(this.playerShip, -1);
+        });
+        this.gameService.gameDTO.equip.split(',').forEach(value => {
+          switch (value.charAt(0)) {
+            case 'A': {
+              new Armor(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'C': {
+              new Capacitor(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'T': {
+              new Cargobay(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'E': {
+              new Engine(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'F': {
+              new Fueltank(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'L': {
+              new Lasergun(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'R': {
+              new Rocketlauncher(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+            case 'S': {
+              new Shield(Number(value.charAt(1))).install(this.playerShip, 1);
+              break;
+            }
+          }
+        });
+      }
+      this.inventory.length = 0;
+      if ((this.gameService.gameDTO.inventory !== null) && (this.gameService.gameDTO.inventory.length > 0)) {
+        this.gameService.gameDTO.inventory.split(',').forEach(value => {
+          switch (value.charAt(0)) {
+            case '0': {
+              this.inventory.push(this.emptyEquipment);
+              break;
+            }
+            case 'A': {
+              this.inventory.push(new Armor(Number(value.charAt(1))));
+              break;
+            }
+            case 'C': {
+              this.inventory.push(new Capacitor(Number(value.charAt(1))));
+              break;
+            }
+            case 'T': {
+              this.inventory.push(new Cargobay(Number(value.charAt(1))));
+              break;
+            }
+            case 'E': {
+              this.inventory.push(new Engine(Number(value.charAt(1))));
+              break;
+            }
+            case 'F': {
+              this.inventory.push(new Fueltank(Number(value.charAt(1))));
+              break;
+            }
+            case 'L': {
+              this.inventory.push(new Lasergun(Number(value.charAt(1))));
+              break;
+            }
+            case 'R': {
+              this.inventory.push(new Rocketlauncher(Number(value.charAt(1))));
+              break;
+            }
+            case 'S': {
+              this.inventory.push(new Shield(Number(value.charAt(1))));
+              break;
+            }
+            case 'G': {
+              this.inventory.push(new Container(Number(value.charAt(1))));
+              break;
+            }
+          }
+        });
+      } else {
+        for (let i = 0; i < this.playerShip.maxCargo; i++) {
+          this.inventory.push(this.emptyEquipment);
+        }
+        this.inventory[0] = new Container(2);
+      }
+      this.playerShip.currentCargo = this.calcFullCargo();
+      this.credits = this.gameService.gameDTO.credits / 10;
+      this.playerShip.currentHp = this.gameService.gameDTO.armor / 10;
+      this.playerShip.currentFuel = this.gameService.gameDTO.fuel / 10;
+      this.playerShip.currentRocket = this.gameService.gameDTO.rocket;
+      this.currentSystem = this.gameService.gameDTO.system;
+      this.loadSolar();
+      if (this.gameService.gameDTO.planet === -1) {
+        this.playerShip.hyperjump(0, this.point0, this.maxAreaX, this.maxAreaY, this.maxMapX, this.maxMapY);
+      } else {
+        let onDock = false;
+        for (const figure of this.figures) {
+          if ((figure instanceof Orb) && ((figure as Orb).id === this.gameService.gameDTO.planet)) {
+            this.playerShip.onDock = figure;
+            this.playerShip.pointBeforeDock.setValue(this.playerShip.point0);
+            this.playerShip.state = State.DOCK;
+            this.playerShip.currentSpeed = 0;
+            onDock = true;
+            let x = -figure.point0.x + this.maxAreaX / 2;
+            let y = -figure.point0.y + this.maxAreaY / 2;
+            if (x > 0) {
+              x = 0;
+            }
+            if (x < -(this.maxMapX - this.maxAreaX)) {
+              x = -(this.maxMapX - this.maxAreaX);
+            }
+            if (y > 0) {
+              y = 0;
+            }
+            if (y < -(this.maxMapY - this.maxAreaY)) {
+              y = -(this.maxMapY - this.maxAreaY);
+            }
+            this.point0.x = x;
+            this.point0.y = y;
+            break;
+          }
+        }
+        if (onDock === false) {
+          this.playerShip.hyperjump(0, this.point0, this.maxAreaX, this.maxAreaY, this.maxMapX, this.maxMapY);
+        }
+      }
+    });
+  }
+
+  private rebirth() {
+    this.playerShip.allReset();
+    this.credits *= 0.9;
+    this.playerShip.currentHp = this.playerShip.maxHp;
+    this.playerShip.currentFuel = this.playerShip.maxFuel;
+    this.playerShip.currentShield = this.playerShip.maxShield;
+    this.playerShip.currentVolume = 0;
+    this.playerShip.goodsInBay.fill(0);
+    for (const figure of this.figures) {
+      if ((figure instanceof Orb) && ((figure as Orb).id === 0)) {
+        this.playerShip.onDock = figure;
+        this.playerShip.pointBeforeDock.setValue(this.playerShip.point0);
+        this.playerShip.state = State.DOCK;
+        this.playerShip.currentSpeed = 0;
+        this.figures.push(this.playerShip);
+        this.sms('Вы погибли', 1);
+        break;
+      }
+    }
+    this.saveGame();
+  }
+
+  saveGame() {
+    this.gameService.gameDTO.credits = this.credits * 10;
+    this.gameService.gameDTO.armor = this.playerShip.currentHp * 10;
+    this.gameService.gameDTO.fuel = this.playerShip.currentFuel * 10;
+    this.gameService.gameDTO.rocket = this.playerShip.currentRocket;
+    this.gameService.gameDTO.system = this.currentSystem;
+    this.gameService.gameDTO.planet = (this.playerShip.onDock !== null) ? (this.playerShip.onDock as Orb).id : -1;
+    this.gameService.gameDTO.equip = Array.from(this.playerShip.equipments.values()).map(value => value.label).join(',');
+    this.gameService.gameDTO.inventory = this.inventory.map(value => value.label).join(',');
+    this.gameService.gameDTO.goods = this.playerShip.goodsInBay.toString();
+    this.gameService.addOrUpdate(this.gameService.gameDTO).subscribe(value => {
+      if (this.gameService.gameDTO.id === null) {
+        this.gameService.gameDTO = value;
+      }
+    });
+  }
+
+  login() {
+    if (this.userService.login()) {
+      this.newGame();
+    }
+  }
+
+  logout() {
+    this.userService.logout();
+    this.menu = Menu.TARGET;
+    this.userService.password = '';
+    this.figures.splice(this.figures.indexOf(this.playerShip), 1); // удаляем объект с карты
+    this.playerShip = null;
+  }
+
 }
