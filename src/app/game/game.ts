@@ -47,6 +47,7 @@ export class SearchField {
 })
 export class GameComponent implements OnInit {
 
+
   constructor(public userService: UserService, public gameService: GameService) { }
 
   @ViewChild('canvas123', { static: true })
@@ -102,6 +103,7 @@ export class GameComponent implements OnInit {
   messageSuccess = 'alert alert-success';
   messageDanger = 'alert alert-danger';
   users: User[];
+  needSave = true;
 
   ngOnInit(): void {
     this.userService.getEs().subscribe(value => {
@@ -146,11 +148,14 @@ export class GameComponent implements OnInit {
         if ((this.playerShip.state === State.DOCK) && ((this.playerShip.onDock as Orb).goodsPriceOnPlanet.length === 0)) {
           this.createPriceGoods(this.playerShip.onDock as Orb);  // генерируем цены на товары при приземлении
           this.createMarket(this.solars[this.currentSystem], this.playerShip.onDock as Orb); // генерируем товары на планете
-          this.saveGame();
         }
         if ((this.playerShip.state !== State.DOCK) && (this.playerShip.message.length > 0) && (this.playerShip.newMessage)) {
           this.sms(this.playerShip.message, this.playerShip.messageStyle);
           this.playerShip.newMessage = false;
+        }
+        if ((this.playerShip.state === State.DOCK) && (this.needSave === true)) {
+          this.needSave = false;
+          this.saveGame();
         }
         if (this.playerShip.state === State.DEAD) {
           this.rebirth();
@@ -551,6 +556,7 @@ export class GameComponent implements OnInit {
   undock() {
     this.playerShip.undock();
     this.saveGame();
+    this.needSave = true;
   }
 
   mine() {

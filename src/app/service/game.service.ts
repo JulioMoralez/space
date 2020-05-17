@@ -40,7 +40,6 @@ export class GameService {
   getE(id: string): Observable<GameDTO> {
     return this.http.get<GameDTO>(this.url + '/' + id).pipe(tap(x => this.gameDTO = x));
   }
-
   getEs(): Observable<GameDTO[]> {
     return this.http.get<GameDTO[]>(this.url + 's/').pipe(tap(x => this.gameDTOs = x));
   }
